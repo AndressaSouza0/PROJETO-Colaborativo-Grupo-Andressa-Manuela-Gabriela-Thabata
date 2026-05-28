@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Bibliotecário - Gerenciar Alunos</title>
+    <link rel="stylesheet" href="/Fronted sistema/cadastro de alunos/alunos.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+     <link rel="stylesheet" href="https://use.typekit.net/piq3igt.css">
+    <link rel="stylesheet" href="/cadastro de livro/cadastro.css">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300..800&family=Raleway:wght@100..900&display=swap" rel="stylesheet">
+</head>
+<body>
+<aside class="sidebar" id="sidebar">
+
+<hr class="sidebar-divider">
+
+        <div class="logo">
+            <div class="logo">
+    <div class="logo-main" style="display: flex; align-items: center; gap: 10px;">
+        <i class="bi bi-book" style="font-size: 1.8rem; color: var(--primary-blue);"></i>
+        <h2>Biblioteca Jorge Amado</h2>
+    </div>
+</div>
+<hr class="sidebar-divider">
+        </div>
+        <nav>
+            <a href="#"><i class="bi bi-menu-app"></i></i> <span class="nav-text">Dashboard</span></a>
+            <a href="/Fronted sistema/cadastro de livro/cadastro.html"><i class="bi bi-book"></i></i> <span class="nav-text">Livros</span></a>
+            <a href="/Fronted sistema/cadastro de doações/doações.html"><i class="bi bi-heart"></i></i> <span class="nav-text">Doações</span></a>
+            <a href="/Fronted sistema/cadastro de alunos/alunos.html" class="active" style="font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif ;font-optical-sizing: auto; font-weight: 550;"><i class="bi bi-person-add"></i></i> <span class="nav-text">Alunos</span></a>
+            <a href="/Fronted sistema/Empréstimo/emprestimo.html"><i class="bi bi-layout-text-sidebar-reverse"></i></i> <span class="nav-text">Empréstimo</span></a>
+            <a href="#"><i class="bi bi-envelope-at"></i></i> <span class="nav-text">Email</span></a>
+        </nav>
+       
+         <button class="menu-toggle" onclick="toggleSidebar()">
+            <i class="bi bi-caret-left" id="menu-icon"><span class="nav-text">Minimizar</span></i>
+        </button>
+    </aside>
+    </aside>
+    <main class="content">
+        <header>
+            <div>
+                <h1>Gerenciamento de Alunos</h1>
+                <span>Cadastre e gerencie os alunos da instituição.</span>
+            </div>
+            <div class="header-actions">
+                <button id="openModal" class="btn-primary">
+                    <i class="fas fa-plus"></i> Cadastrar Aluno
+                </button>
+            </div>
+        </header>
+
+        <div id="area-listagem">
+            <section class="search-area">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Pesquisar Nome, RA ou Email...">
+                </div>
+            </section>
+
+            <div class="table-container">
+                <table class="alunos-table">
+                    <thead>
+                        <tr>
+                            <th>RA</th>
+                            <th>Nome</th>
+                            <th>Série/Turma</th>
+                            <th>Ensino</th>
+                            <th>Instituição</th>
+                            <th>Email Institucional</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentTableBody"></tbody>
+                </table>
+                <div id="noDataMessage" class="no-data" style="display: none; text-align: center; padding: 20px; color: #666;">Nenhum Aluno cadastrado</div>
+            </div>
+        </div>
+
+        <div id="area-cadastro" style="display: none;">
+            <div class="full-screen-card">
+                <div class="card-header">
+                    <h2>Cadastrar novo Aluno</h2>
+                    <button type="button" class="btn-close-view" onclick="fecharCadastro()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <form id="formCadastroAluno">
+                      <div class="form-row">
+                        <div class="form-group">
+                            <h5>Nome Completo *</h5>
+                            <input type="text" id="nome_aluno" placeholder="Nome do aluno" required>
+                        </div>
+                        <div class="form-group">
+                               <h5>RA do Aluno *</h5>
+                            <input type="text" id="ra" placeholder="Ex: 0001112345670sp" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                           <h5>Email Institucional *</h5>
+                            <input type="email" id="email_institucional" placeholder="RA@al.educacao.sp.gov.br" required>
+                        </div>
+                        <div class="form-group">
+                             <h5>Instituição *</h5>
+                            <input type="text" id="instituicao" placeholder="Direção Responsável" readonly>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                          <h5>Ensino *</h5>
+                        <select id="ensino" required onchange="atualizarSeries()">
+                            <option value="">Selecione...</option>
+                            <option value="Fundamental">Ensino Fundamental</option>
+                            <option value="Médio">Ensino Médio</option>
+                        </select>
+                        </div>
+                    <div class="form-group" style="width: 100%;">
+                        <h5>Série *</h5>
+                        <select id="serie" required>
+                            <option value="">Selecione o ensino primeiro</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <h5>Turma *</h5>
+                        <select id="turma">
+                            <option value="">Selecione...</option>
+                            <option value="A">A</option>
+                            <option value="B">B</option>
+                            <option value="C">C</option>
+                            <option value="D">D</option>
+                            <option value="E">E</option>
+                            <option value="F">F</option>
+                        </select>
+                    </div>
+                </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn-cancel" onclick="fecharCadastro()">Cancelar</button>
+                        <button type="submit" class="btn-primary">Salvar Aluno</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <div id="deleteModal" class="modal-overlay-deletealuno" style="display: none;">
+        <div class="modal-content-deletelivro">
+            <i class="bi bi-exclamation-triangle" style="color: #d9534f; font-size: 2rem;"></i>
+            <h3>Excluir Aluno</h3>
+            <p>Tem certeza que deseja excluir o aluno <strong id="nomeAlunoExcluir"></strong>?</p>
+            <div class="modal-footer-deletelivro">
+                <button onclick="fecharModal()">Cancelar</button>
+                <button id="confirmDeleteBtn" class="btn-danger">Excluir</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/Fronted sistema/cadastro de alunos/alunos.js"></script>
+</body>
+</html>

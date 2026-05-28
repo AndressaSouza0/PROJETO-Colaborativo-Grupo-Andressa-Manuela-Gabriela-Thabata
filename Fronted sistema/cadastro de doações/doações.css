@@ -1,0 +1,848 @@
+:root {
+    --primary-blue: #1a73e8;
+    --bg-white: #ffffff;
+    --bg-gray: #f8f9fa;
+    --sidebar-hover: #f1f3f4;
+    --sidebar-active: #e8f0fe;
+    --text-dark: #1d1d1f;
+    --text-gray: #5f6368;
+    --danger-red: #ff4d4d;
+    --success-green: #22c55e;
+    --border-color: #e0e4e9;
+}
+
+/* --- RESET E BÁSICO --- */
+* { 
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box; 
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+body { 
+    display: flex; 
+    background-color: var(--bg-gray); 
+    min-height: 100vh; 
+    color: var(--text-dark); 
+}
+
+/* Se a sidebar estiver minimizada, esconda o conteúdo que não deve aparecer */
+.sidebar.minimized .nav-text, 
+.sidebar.minimized .extra-icons {
+    display: none;
+}
+/* Centraliza os links de navegação quando colapsado */
+.sidebar.collapsed nav a {
+    justify-content: center;
+    padding: 12px 0;
+    width: 100%;
+}
+
+/* Remove margens que empurram o ícone para o lado */
+.sidebar.collapsed nav a i {
+    margin: 0;
+}
+
+/* --- SIDEBAR (BARRA LATERAL) --- */
+.sidebar { 
+    width: 260px; 
+    background-color: var(--bg-white); 
+    border-right: 1px solid var(--border-color);
+    display: flex; 
+    flex-direction: column; 
+    padding: 20px; 
+    position: fixed; 
+    height: 100vh; 
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+
+
+.menu-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-bottom: 25px;
+    align-self: flex-start; 
+    padding: 5px;
+}
+
+.bar { 
+    width: 22px; 
+    height: 2px; 
+    background-color: var(--text-dark); 
+    border-radius: 2px; 
+}
+
+.logo {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 15px;
+}
+
+.logo-main h2 {
+    font-weight: 700;
+    font-size: 1.5rem;
+    color: var(--text-dark);
+    margin-bottom: 0px;
+    font-family: "myriad-pro", sans-serif;
+    font-weight: 700;
+    font-style: normal;
+}
+
+.sidebar-text-content h3 {
+    font-weight: 700;
+    font-size: 1.3rem;
+    color: var(--primary-blue);
+    margin-bottom: 10px;
+}
+
+.sidebar-text-content span {
+    font-weight: 400;
+    font-size: 0.72rem;
+    color: var(--text-gray);
+    display: block;
+    line-height: 1.2;
+}
+
+.sidebar-divider {
+    border: none;
+    border-top: 1px solid var(--border-color);
+    margin-bottom: 5px;
+}
+
+nav { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 8px; 
+    flex-grow: 1; 
+}
+
+nav a { 
+    display: flex; 
+    align-items: center; 
+    gap: 14px;
+    color: var(--text-gray); 
+    text-decoration: none; 
+    padding: 12px 16px; 
+    border-radius: 12px;
+    font-weight: 500;
+    transition: all 0.2s ease; 
+}
+
+nav a i { font-size: 1.2rem; width: 24px; text-align: center; }
+nav a:hover { background-color: var(--sidebar-hover); color: var(--primary-blue); }
+nav a.active { 
+    background-color: var(--sidebar-active); 
+    color: var(--primary-blue);
+}
+
+.menu-toggle { 
+    margin-top: auto;
+    background: none; 
+    border: none; 
+    color: var(--text-gray); 
+    cursor: pointer; 
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-weight: 500;
+    transition: 0.2s;
+}
+.menu-toggle:hover { background: #e8f0fe; color: var(--primary-blue); }
+
+/* --- MAIN CONTENT --- */
+.content { 
+    margin-left: 230px; /* Ajustado para bater com a largura da sidebar aberta */
+    flex-grow: 1;  
+    transition: margin-left 0.3s ease; 
+    padding: 30px 60px; /* 40px no topo/baixo, 60px nas laterais */
+}
+
+
+/* Quando a sidebar estiver colapsada, o conteúdo encosta nela */
+  .titulo {
+    font-size: 32px;
+    font-weight: bold;
+    color: #1a1c32;
+    /* Remove a margem padrão e adiciona apenas embaixo */
+    margin: 0 0 10px 0; 
+  }
+
+  .subtitulo {
+    font-size: 18px;
+    color: #6c757d;
+    margin: 0;
+  }
+
+/* Esconde os textos */
+.sidebar.collapsed { width: 80px; }
+.sidebar.collapsed + .content { margin-left: 40px; }
+
+.sidebar.collapsed .logo-main h2,
+.sidebar.collapsed .sidebar-text-content,
+.sidebar.collapsed .nav-text { display: none; }
+
+/* Esconde especificamente os grupos de ícones extras e logos ao colapsar */
+.sidebar.collapsed .sidebar-divider,
+.sidebar.collapsed .logo,
+.sidebar.collapsed .sidebar-text-content,
+.sidebar.collapsed .nav-text,
+.sidebar.collapsed .extra-icons { 
+    display: none !important; 
+}
+
+/* Centraliza perfeitamente os ícones do menu e sair */
+.sidebar.collapsed .logo-main i {
+    margin: 0 auto;          /* Força a centralização caso o flex não baste */
+    font-size: 1.8rem;       /* Opcional: aumentar um pouco o ícone no modo mini */
+}
+
+/* Ajustes para centralizar os ícones e o hover quando colapsado */
+.sidebar.collapsed nav a, 
+.sidebar.collapsed .btn-minimizar {
+    justify-content: center; /* Centraliza o ícone horizontalmente */
+    padding: 12px 0;        /* Remove o padding lateral que empurra o ícone */
+    gap: 0;                 /* Remove o espaço do texto que foi escondido */
+}
+
+.sidebar.collapsed nav a i,
+.sidebar.collapsed .btn-minimizar i {
+    margin: 0;             /* Remove margens residuais dos ícones */
+    width: auto;           /* Garante que o ícone não ocupe espaço extra */
+}
+
+/* Garante que o botão de fechar/abrir também esteja centralizado */
+.sidebar.collapsed .menu-toggle {
+    align-self: center;      /* Alinha o ícone de hambúrguer ao centro */
+    margin-left: 0;
+    margin-right: 0;
+}
+
+header { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-bottom: 30px; 
+}
+
+header h1 { font-family: "myriad-pro", sans-serif;
+font-weight: 700;
+font-style: normal; }
+
+.content header div span {
+    font-family: "Raleway", sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #595a56;
+    line-height: normal;
+}
+
+/* Container dos botões no topo */
+.header-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+/* Estilo Base para os Botões do Header */
+.btn-generos, .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 100;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+/* Botão de Cadastrar Livro (Estilo Primário Azul) */
+.btn-primary {
+    background-color: #d01264;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #a51051; /* Um azul um pouco mais escuro */
+    box-shadow: 0 4px 12px rgba(26, 115, 232, 0.2);
+    transform: translateY(-1px);
+}
+
+/* Ajuste nos ícones dentro dos botões */
+.btn-generos i, .btn-primary i {
+    font-size: 1rem;
+}
+
+/* --- ÁREA DE CADASTRO (TELA CHEIA) --- */
+#area-cadastro {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.full-screen-card {
+    background: white;
+    border-radius: 16px;
+    padding: 35px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    color: #475569;
+    margin-bottom: 20px;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.field label {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text-dark);
+}
+
+.field input, .field select {
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 1rem;
+    background: #fdfdfd;
+}
+
+/* --- GRID DE RFID DINÂMICO --- */
+#container-rfids-dinamico {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Dois campos por linha */
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.rfid-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.rfid-input-wrapper input {
+    width: 100%;
+    padding-right: 40px;
+    background-color: #f8f9fa;
+}
+
+.rfid-input-wrapper i {
+    position: absolute;
+    right: 15px;
+    color: #ccc;
+    font-size: 0.9rem;
+}
+
+/* --- BOTÕES --- */
+/* Ajuste na área dos botões para ficarem lado a lado no canto direito */
+.form-actions {
+    display: flex;
+    justify-content: flex-end; /* Alinha à direita */
+    gap: 15px;                 /* Espaço entre os botões */
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+ /* Linha sutil para separar do form */
+}
+
+/* Garante que os botões tenham uma altura cosistente */
+.btn-submit-save, .btn-secondary-outline {
+    color: white;
+    background-color: #d01264;
+    border: 1px solid var(--border-color);
+    padding: 14px 30px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.btn-submit-save:hover {
+    background-color: #a51051; /* Um azul um pouco mais escuro */
+    box-shadow: 0 4px 12px rgba(26, 115, 232, 0.2);
+    transform: translateY(-1px);
+}
+
+
+/* Estilo para o grid de RFID logo abaixo da quantidade */
+#container-rfids-dinamico {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.btn-secondary-outline {
+    background: white;
+    background-color: #1a73e8;
+    border: 1px solid var(--border-color);
+    padding: 14px 30px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.btn-secondary-outline:hover {
+    background-color: #1557b0; /* Um azul um pouco mais escuro */
+    box-shadow: 0 4px 12px rgba(26, 115, 232, 0.2);
+    transform: translateY(-1px);
+}
+
+/* --- MODAL DE GÊNEROS (FOTO 5) --- */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0; top: 0; width: 100%; height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+}
+
+.modal-content {
+    background-color: #fff;
+    margin: 10vh auto;
+    width: 90%;
+    max-width: 500px;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.modal-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-body { padding: 24px; }
+
+.input-group-genero {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 25px;
+}
+
+.genero-item-lista {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background: #fdfdfd;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    margin-bottom: 8px;
+}
+
+.btn-del-genero {
+    color: var(--danger-red);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.1rem;
+}
+
+/* --- ANIMAÇÕES --- */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- CARDS DE LISTAGEM --- */
+.book-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.book-card {
+    background: white;
+    padding: 24px;
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.btn-close-view {
+    color: rgb(0, 0, 0);
+    background-color: #ffffff;
+    border: 1px solid var(--border-color);
+    padding: 10px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 100;
+}
+
+.search-box { 
+    background: white; 
+    padding: 14px 20px; 
+    border-radius: 12px; 
+    display: flex; 
+    align-items: center; 
+    border: 1px solid var(--border-color); 
+    margin-bottom: 30px; 
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+.search-box input { border: none; outline: none; width: 100%; margin-left: 12px; font-size: 1rem; color: var(--text-dark); }
+
+/* --- BARRA DE GÊNEROS --- */
+.genres-bar-container {
+    background-color: white;
+    border: 1px solid var(--border-color);
+    border-radius: 15px;
+    padding: 15px;
+    margin: 25px 0;
+    box-shadow: 1px 0px 5px rgba(0, 0, 0, 0.2);
+}
+
+
+.btn-gen
+
+.genres-tabs { display: flex; gap: 10px; overflow-x: auto; scrollbar-width: none; }
+.genres-tabs::-webkit-scrollbar { display: none; }
+
+/* --- BARRA DE GÊNEROS --- */
+.genres-bar-container {
+    background-color: white;
+    border: 1px solid var(--border-color);
+    border-radius: 15px;
+    padding: 15px;
+    margin: 25px 0;
+}
+
+.genres-tabs { display: flex; gap: 10px; overflow-x: auto; scrollbar-width: none; }
+.genres-tabs::-webkit-scrollbar { display: none; }
+
+.tab-item {
+    padding: 8px 18px;
+    border: none;
+    border-radius: 10px;
+    background-color: #f1f3f5;
+    color: #495057;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: 0.2s;
+}
+
+.tab-item.active { background-color: var(--primary-blue); color: white; }
+.tab-item:hover:not(.active) { background-color: #e9ecef; }
+
+.content header h1 {
+    font-family: "myriad-pro", sans-serif;
+font-weight: 700;
+font-style: normal;
+}
+
+.table-container {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    margin-top: 20px;
+    box-shadow: 1px 0px 5px rgba(0, 0, 0, 0.2);
+}
+
+.books-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.books-table th { font-size: .85rem; padding: 16px 20px; color: var(--text-gray); 
+   background: #fcfcfc; font-weight: 700; border-bottom: 1px solid var(--border-color);
+    letter-spacing: 0.5px;
+}
+
+.books-table td {
+    padding: 16px 12px;
+    color: #222121;
+    border-bottom: 1px solid #f9f9f9;
+}
+
+
+/* Estilo dos Badges (as pílulas coloridas) */
+.badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+}
+
+.badge-year { background: #e6fcf5; color: #20c997; }
+.badge-genre { background: #f3f0ff; color: #7950f2; }
+.badge-stock { background: #ebfbee; color: #40c057; }
+
+.btn-delete {
+    background: none;
+    border: none;
+    color: #ff4d4d;
+    cursor: pointer;
+    font-size: 1.1rem;
+}
+
+.no-data {
+    text-align: center;
+    padding: 40px;
+    color: #999;
+}
+
+
+
+/* Estilos básicos para o Modal */
+
+/* Overlay do Modal */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1000;
+}
+
+/* Card Principal */
+.modal-card {
+    background: white;
+    width: 90%;
+    max-width: 600px;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+/* Header */
+/* No seu arquivo CSS, altere ou verifique esta parte: */
+/* --- ESTILIZAÇÃO DO MODAL DE GÊNEROS --- */
+
+/* Cabeçalho do Modal */
+/* --- ESTILIZAÇÃO DO MODAL DE GÊNEROS --- */
+
+/* Cabeçalho do Modal */
+.modal-header h2 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text-dark);
+}
+
+.modal-header p {
+    font-size: 0.85rem;
+    color: var(--text-gray);
+    margin-top: 4px;
+}
+
+/* Seção de Input de Gênero */
+.input-section {
+    margin-bottom: 25px;
+}
+
+.input-section label {
+    display: block;
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+    color: var(--text-dark);
+}
+
+.input-group-genero {
+    display: flex;
+    gap: 10px;
+}
+
+.input-group-genero input {
+    flex: 1;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.input-group-genero input:focus {
+    border-color: var(--primary-blue);
+}
+
+/* Seção da Lista */
+.list-section label {
+    display: block;
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 12px;
+    color: var(--text-gray);
+}
+
+#listaGenerosContainer {
+    max-height: 300px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+/* Customização da Scrollbar da lista */
+#listaGenerosContainer::-webkit-scrollbar {
+    width: 6px;
+}
+#listaGenerosContainer::-webkit-scrollbar-thumb {
+    background: #e0e4e9;
+    border-radius: 10px;
+}
+
+/* Item da Lista de Gênero */
+.genero-item-lista {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 18px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.genero-item-lista:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.genero-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.genero-info i {
+    color: #8b5cf6; /* Roxo da pasta */
+    font-size: 1.1rem;
+}
+
+.genero-name {
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 0.95rem;
+}
+
+.genero-count {
+    color: #94a3b8;
+    font-size: 0.8rem;
+    font-weight: 400;
+}
+
+/* Botões do Modal */
+.btn-add-inline {
+    background-color: var(--primary-blue);
+    color: white;
+    border: none;
+    padding: 0 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-add-inline:hover {
+    background-color: #1557b0;
+}
+
+.btn-del-genero {
+    color: #cbd5e1; /* Cor cinza inicial */
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 5px;
+    transition: color 0.2s;
+}
+
+.btn-del-genero:hover {
+    color: var(--danger-red); /* Fica vermelho no hover */
+}
+
+/* Rodapé */
+.modal-footer {
+    padding: 15px 24px;
+    border-top: 1px solid #f0f0f0;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.close-btn-footer {
+    background: #f1f5f9;
+    border: none;
+    padding: 10px 25px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    color: #475569;
+    transition: background 0.2s;
+}
+
+.close-btn-footer:hover {
+    background: #e2e8f0;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #94a3b8;
+    cursor: pointer;
+}
+
+.etiquetas-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.tag-card {
+    background: #fdfdfd;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.tag-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.tag-card-header i { color: #5d5fef; }
+
+.status-disponivel {
+    background: #e8f5e9;
+    color: #2e7d32;
+    padding: 2px 8px;
+    border-radius: 15px;
+    font-size: 0.8em;
+    font-weight: bold;
+}
