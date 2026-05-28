@@ -14,6 +14,7 @@
 <body>
         <aside class="sidebar" id="sidebar">
     <div class="logo">
+         <hr class="sidebar-divider">
         <div class="logo-main" style="display: flex; align-items: center; gap: 10px;">
             <i class="bi bi-book" style="font-size: 1.8rem; color: var(--primary-blue);"></i>
             <h2>Biblioteca Jorge Amado</h2>
@@ -21,12 +22,12 @@
     </div>
     <hr class="sidebar-divider">
     <nav>
-        <a href="#"><i class="bi bi-menu-app"></i> <span class="nav-text">Dashboard</span></a>
+        <a href="/Fronted sistema/dashboard/dashboard.html"><i class="bi bi-menu-app"></i> <span class="nav-text">Dashboard</span></a>
         <a href="/Fronted sistema/cadastro de livro/cadastro.html"><i class="bi bi-book"></i> <span class="nav-text">Livros</span></a>
         <a href="/Fronted sistema/cadastro de doações/doações.html"><i class="bi bi-heart"></i> <span class="nav-text">Doações</span></a>
         <a href="/Fronted sistema/cadastro de alunos/alunos.html"><i class="bi bi-person-add"></i> <span class="nav-text">Alunos</span></a>
         <a href="/Fronted sistema/Empréstimo/emprestimo.html" class="active" style="font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif ;font-optical-sizing: auto; font-weight: 550;"><i class="bi bi-layout-text-sidebar-reverse"></i> <span class="nav-text">Empréstimo</span></a>
-        <a href="#"><i class="bi bi-envelope-at"></i> <span class="nav-text">Email</span></a>
+        <a href="/Fronted sistema/chatbot/chatbot.html"><i class="bi bi-whatsapp"></i> <span class="nav-text">WhatsApp</span></a>
     </nav>
     <button class="menu-toggle" onclick="toggleSidebar()">
             <i class="bi bi-caret-left" id="menu-icon"><span class="nav-text">Minimizar</span></i>
@@ -255,6 +256,8 @@
 
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- conexao-api.js expõe ChatbotAPI globalmente para enviar mensagens pelo WhatsApp -->
+    <script src="/Fronted sistema/chatbot/conexao-api.js"></script>
     <script src="/Fronted sistema/Empréstimo/emprestimo.js"></script>
 </body>
 </html>

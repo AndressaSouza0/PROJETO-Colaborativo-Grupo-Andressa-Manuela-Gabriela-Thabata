@@ -3,184 +3,210 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema Bibliotecário - Gerenciar</title>
+    <title>Sistema Bibliotecário - Doações</title>
     <link rel="stylesheet" href="https://use.typekit.net/piq3igt.css">
-    <link rel="stylesheet" href="/cadastro de doações/doações.css">
+    <link rel="stylesheet" href="/Fronted sistema/cadastro de doações/doações.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300..800&family=Raleway:wght@100..900&display=swap" rel="stylesheet">
 </head>
 <body>
 
     <aside class="sidebar" id="sidebar">
-   
-
-<hr class="sidebar-divider">
-       
-
         <div class="logo">
-            <div class="logo">
-    <div class="logo-main" style="display: flex; align-items: center; gap: 10px;">
-        <i class="bi bi-book" style="font-size: 1.8rem; color: var(--primary-blue);"></i>
-        <h2>Biblioteca Jorge Amado</h2>
-    </div>
-</div>
-<hr class="sidebar-divider">
+            <div class="logo-main" style="display: flex; align-items: center; gap: 10px;">
+                <i class="bi bi-book" style="font-size: 1.8rem; color: var(--primary-blue);"></i>
+                <h2>Biblioteca Jorge Amado</h2>
+            </div>
         </div>
+        <hr class="sidebar-divider">
         <nav>
-            <a href="#"><i class="bi bi-menu-app"></i></i> <span class="nav-text">Dashboard</span></a>
-            <a href="/Fronted sistema/cadastro de livro/cadastro.html"><i class="bi bi-book"></i></i> <span class="nav-text">Livros</span></a>
-            <a href="/Fronted sistema/cadastro de doações/doações.html" class="active"><i class="bi bi-heart"></i></i> <span class="nav-text">Doações</span></a>
-            <a href="/Fronted sistema/cadastro de alunos/alunos.html"><i class="bi bi-person-add"></i></i> <span class="nav-text">Alunos</span></a>
-            <a href="/Fronted sistema/Empréstimo/emprestimo.html"><i class="bi bi-layout-text-sidebar-reverse"></i></i> <span class="nav-text">Empréstimo</span></a>
-            <a href="#"><i class="bi bi-envelope-at"></i></i> <span class="nav-text">Email</span></a>
+            <a href="/Fronted sistema/dashboard/dashboard.html"><i class="bi bi-menu-app"></i> <span class="nav-text">Dashboard</span></a>
+            <a href="/Fronted sistema/cadastro de livro/cadastro.html"><i class="bi bi-book"></i> <span class="nav-text">Livros</span></a>
+            <a href="/Fronted sistema/cadastro de doações/doações.html" class="active"><i class="bi bi-heart"></i> <span class="nav-text">Doações</span></a>
+            <a href="/Fronted sistema/cadastro de alunos/alunos.html"><i class="bi bi-person-add"></i> <span class="nav-text">Alunos</span></a>
+            <a href="/Fronted sistema/Empréstimo/emprestimo.html"><i class="bi bi-layout-text-sidebar-reverse"></i> <span class="nav-text">Empréstimo</span></a>
+            <a href="/Fronted sistema/chatbot/chatbot.html"><i class="bi bi-whatsapp"></i> <span class="nav-text">WhatsApp</span></a>
         </nav>
-        <button class="menu-toggle" onclick="toggleSidebar()" aria-label="Abrir/Fechar menu">
-    <i class="bi bi-caret-left" id="menu-icon">Minimizar</i>
-</button>
+        <button class="menu-toggle" onclick="toggleSidebar()">
+            <i class="bi bi-caret-left" id="menu-icon"></i>
+            <span class="nav-text">Minimizar</span>
         </button>
     </aside>
 
     <main class="content">
+
+        <!-- CABEÇALHO -->
         <header>
             <div>
                 <h1>Doações de Livros</h1>
-                <span>Cadastre e gerencie os livros doados a biblioteca.</span>
+                <span>Cadastre e gerencie os livros doados à biblioteca.</span>
             </div>
             <div class="header-actions">
-    </button>
-    <button id="btnAbrirCadastro" class="btn-primary">
-        <i class="fas fa-plus"></i> Registrar Doação
-    </button>
-</div>
+                <button id="openModal" class="btn-primary">
+                    <i class="fas fa-plus"></i> Registrar Doação
+                </button>
+            </div>
         </header>
 
-        <div id="area-listagem">
-    <section class="search-area">
-        <div class="search-box">
-            <i class="fas fa-search"></i>
-            <input type="text" id="searchInput" placeholder="Pesquisar Nome, autor, doador ou ISBN...">
+        <!-- BARRA DE GÊNEROS -->
+        <div class="genres-bar-container">
+            <div id="genresTabs" class="genres-tabs">
+                <button class="tab-item active" data-genre="todos">Todos (0)</button>
+            </div>
         </div>
-    </section>
 
-    <section id="bookList" class="book-list"></section>
+        <!-- ÁREA DE LISTAGEM -->
+        <div id="area-listagem">
+            <section class="search-area">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Pesquisar doador, livro, autor ou ISBN...">
+                </div>
+            </section>
 
-    <div class="table-container">
-        <table class="books-table">
-            <thead>
-                <tr>
-                    <th>Doador</th>
-                    <th>Livro</th>
-                    <th>Autor</th>
-                    <th>Data</th>
-                    <th>Gênero</th>
-                    <th>Disponível</th>
-                    <th>Etiqueta</th>
-                </tr>
-            </thead>
-            <tbody id="bookTableBody"></tbody>
-        </table>
-        <div id="noDataMessage" class="no-data">Nenhum Doação registrada</div>
-    </div>
-</div> <div id="area-cadastro" style="display: none;">
+            <div class="table-container">
+                <table class="books-table">
+                    <thead>
+                        <tr>
+                            <th>Doador</th>
+                            <th>Livro</th>
+                            <th>Autor</th>
+                            <th>Gênero</th>
+                            <th>Ano</th>
+                            <th>Disponível</th>
+                            <th>Etiqueta</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bookTableBody"></tbody>
+                </table>
+                <div id="noDataMessage" class="no-data" style="display: none;">
+                    Nenhuma doação registrada.
+                </div>
+            </div>
+        </div>
 
+        <!-- ÁREA DE CADASTRO -->
         <div id="area-cadastro" style="display: none;">
-            <div class="full-screen-card">
-                <div class="card-header">
-                    <h2>Cadastro de Doação</h2>
-                    <button type="button" class="btn-close-view" onclick="fecharDoação()">
+            <div class="card-cadastro-integrado">
+                <div class="card-header-form">
+                    <h3>Registrar Nova Doação</h3>
+                    <button type="button" class="btn-close-view" onclick="fecharCadastro()">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
 
-                <form id="formDoação">
+                <form id="formDoacao">
+
+                    <!-- Nome do doador + ISBN -->
                     <div class="form-row">
-                        <div class="field">
-                        <label>Nome do Doador *</label>
-                        <input type="text" id="isbn" required>
+                        <div class="form-group">
+                            <h5>Nome do Doador *</h5>
+                            <input type="text" id="nome_doador" placeholder="Ex: João da Silva" required>
                         </div>
-                        <div class="field">
-                            <label>ISBN *</label>
-                            <input type="text" id="titulo" placeholder="0001112345670sp" required>
+                        <div class="form-group">
+                            <h5>ISBN *</h5>
+                            <input type="text" id="isbn" placeholder="000-00-000-0000-0" required>
                         </div>
                     </div>
 
+                    <!-- Título + Autor -->
                     <div class="form-row">
-                        <div class="field">
-                            <label>Autor *</label>
-                            <input type="text" id="email" placeholder="Email Instituicional" required>
+                        <div class="form-group">
+                            <h5>Nome do Livro *</h5>
+                            <input type="text" id="titulo" placeholder="Dom Casmurro" required>
                         </div>
-                        <form>
-                            <div class="field">
-                                <label>Edição *</label>
-                                <input type="text" id="edicao" placeholder="1ª Edição" required>
-                            </div>
+                        <div class="form-group">
+                            <h5>Autor *</h5>
+                            <input type="text" id="autor" placeholder="Machado de Assis" required>
                         </div>
-    
-                        <div class="form-row">
-                            <div class="field">
-                                <label>Ano de Edição * (mínimo 2009)</label>
-                                <input type="number" id="Ano" min="2009" placeholder="2024" required>
-                                <small>Livros de 2008 ou anteriores não são aceitos</small>
-                            </div>
-                            <div class="field">
-                                <label>Gênero *</label>
-                                <select id="genero-select" required>
-                                    <option value="">Selecione um gênero</option>
-                                </select>
-                            </div>
-                        </div>
-    
-                        <div class="form-row">
-        <div class="field">
-            <label>Quantidade de Exemplares *</label>
-            <input type="number" id="quantidade_total" min="1" placeholder="Ex: 3" required>
-        </div>
-    </div>
-    
-    <div class="form-row">
-        <div class="field" style="grid-column: span 2;">
-            <label>Código(s) RFID *</label>
-            <div id="container-rfids-dinamico" class="rfid-grid">
-                </div>
-            <small id="aviso-rfid" style="color: #888;">Digite a quantidade de exemplares para gerar os campos RFID.</small>
-        </div>
-    </div>
-    
-                        <div class="form-actions">
-                            <button type="button" class="btn-secondary-outline" onclick="fecharCadastro()">Cancelar</button>
-                            <button type="submit" class="btn-submit-save">Registrar Doação</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </main>
+                    </div>
 
+                    <!-- Edição + Ano -->
                     <div class="form-row">
-    <div class="field">
-        <label>Quantidade de Exemplares *</label>
-        <input type="number" id="quantidade_total" min="1" placeholder="Ex: 3" required>
-    </div>
-</div>
+                        <div class="form-group">
+                            <h5>Edição *</h5>
+                            <input type="text" id="edicao" placeholder="1ª Edição" required>
+                        </div>
+                        <div class="form-group">
+                            <h5>Ano de Edição * (mínimo 2009)</h5>
+                            <input type="number" id="ano" min="2009" value="2024" required>
+                            <span class="helper-text">Livros de 2008 ou anteriores não são aceitos.</span>
+                        </div>
+                    </div>
 
-<div class="form-row">
-    <div class="field" style="grid-column: span 2;">
-        <label>Código(s) RFID *</label>
-        <div id="container-rfids-dinamico" class="rfid-grid">
-            </div>
-        <small id="aviso-rfid" style="color: #888;">Digite a quantidade de exemplares para gerar os campos RFID.</small>
-    </div>
-</div>
+                    <!-- Gênero (metade da largura) -->
+                    <div class="form-group" style="width: 49%;">
+                        <h5>Gênero *</h5>
+                        <!-- Os gêneros são carregados da mesma tabela usada no cadastro de livros -->
+                        <select id="genero" required>
+                            <option value="">Selecione um gênero</option>
+                        </select>
+                    </div>
+
+                    <!-- Quantidade de exemplares -->
+                    <div class="form-group" style="width: 49%; margin-top: 20px;">
+                        <h5>Qtd. de Exemplares *</h5>
+                        <input type="number" id="quantidade" placeholder="Ex: 2" min="1" required>
+                    </div>
+
+                    <!-- Etiquetas RFID (geradas dinamicamente) -->
+                    <div class="form-group" style="width: 100%; margin-top: 20px;">
+                        <h5 id="labelEtiquetas" style="display: none;">Códigos das Etiquetas *</h5>
+                        <div id="containerEtiquetas" class="form-row" style="display: flex; flex-wrap: wrap; gap: 15px;"></div>
+                        <span id="helperEtiquetas" style="display: none;" class="helper-text">
+                            Aproxime o canto do livro do leitor para inserir o código de cada exemplar.
+                        </span>
+                    </div>
 
                     <div class="form-actions">
-                        <button type="button" class="btn-secondary-outline" onclick="fecharCadastro()">Cancelar</button>
-                        <button type="submit" class="btn-submit-save">Salvar Cadastro</button>
+                        <button type="button" class="btn-cancel" onclick="fecharCadastro()">Cancelar</button>
+                        <button type="submit" class="btn-primary">
+                            <i class="bi bi-heart"></i> Registrar Doação
+                        </button>
                     </div>
+
                 </form>
             </div>
         </div>
+
     </main>
 
+    <!-- MODAL DE EXCLUSÃO DE DOAÇÃO -->
+    <div id="deleteModal" class="modal-overlay-delete" style="display: none;">
+        <div class="modal-content-delete">
+            <i class="bi bi-exclamation-triangle" style="color: #d9534f; font-size: 2rem;"></i>
+            <h3>Excluir Doação</h3>
+            <p>Tem certeza que deseja excluir a doação do livro <strong id="nomeLivroExcluir"></strong>?
+            <br>O livro e seus exemplares também serão removidos do acervo.</p>
+            <div class="modal-footer-delete">
+                <button onclick="fecharModalDelete()">Cancelar</button>
+                <button id="confirmDeleteBtn" class="btn-danger">Excluir</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE ETIQUETAS -->
+    <div id="modalEtiquetas" class="modaletiqueta" style="display: none;">
+        <div class="modal-content-tags">
+            <div class="modal-header-tags">
+                <h2>Etiquetas da Doação</h2>
+                <p id="modalEtiquetasTitulo">Nome do Livro</p>
+            </div>
+            <div id="modal-content-tags">
+                <p id="modalTotalEtiquetas" class="total-info">Total: 0</p>
+                <div id="modalEtiquetasGrid" class="tags-grid"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-fechar" onclick="document.getElementById('modalEtiquetas').style.display='none'">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-container" class="toast-container"></div>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="cadastro.js"></script>
+    <script src="/Fronted sistema/cadastro de doações/doações.js"></script>
 </body>
 </html>

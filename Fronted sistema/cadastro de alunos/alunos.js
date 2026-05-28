@@ -125,6 +125,21 @@ async function alternarStatus(ra, statusAtual) {
     }
 }
 
+// Máscara de telefone — formata automaticamente enquanto o usuário digita
+// Suporta celular (11 dígitos): (11) 99999-9999
+// Suporta fixo  (10 dígitos): (11) 9999-9999
+function mascaraTelefone(input) {
+    let v = input.value.replace(/\D/g, '').substring(0, 11);
+
+    if      (v.length === 11) v = v.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+    else if (v.length === 10) v = v.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+    else if (v.length  >  6)  v = v.replace(/(\d{2})(\d{4,5})/, '($1) $2');
+    else if (v.length  >  2)  v = v.replace(/(\d{2})(\d*)/, '($1) $2');
+    else if (v.length  >  0)  v = `(${v}`;
+
+    input.value = v;
+}
+
 // Salvar Cadastro
 formAluno.onsubmit = async (e) => {
     e.preventDefault();
@@ -135,7 +150,8 @@ formAluno.onsubmit = async (e) => {
         ensino: document.getElementById('ensino').value,
         serie: document.getElementById('serie').value,
         turma: document.getElementById('turma').value,
-        instituicao: document.getElementById('instituicao').value
+        instituicao: document.getElementById('instituicao').value,
+        telefone: document.getElementById('telefone').value || null
     };
 
     const { error } = await supabaseClient.from('alunos').insert([dados]);

@@ -1,0 +1,857 @@
+/* =========================================================
+   VARIÁVEIS GLOBAIS
+   O --whatsapp-green é o verde oficial do WhatsApp (#25D366).
+   O restante segue o mesmo padrão das outras páginas.
+   ========================================================= */
+:root {
+    --primary-blue: #1a73e8;
+    --primary-hover: #1557b0;
+    --whatsapp-green: #25D366;
+    --whatsapp-dark: #128C7E;
+    --whatsapp-light: #dcf8c6;
+    --bg-white: #ffffff;
+    --bg-gray: #f0f2f5;
+    --sidebar-hover: #f1f3f4;
+    --sidebar-active: #e8f0fe;
+    --text-dark: #1d1d1f;
+    --text-gray: #5f6368;
+    --danger-red: #e53e3e;
+    --border-color: #e0e4e9;
+    --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.07);
+    --radius-card: 16px;
+    --radius-btn: 10px;
+    --radius-input: 10px;
+}
+
+/* =========================================================
+   RESET E BASE
+   ========================================================= */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    display: flex;
+    background-color: var(--bg-gray);
+    min-height: 100vh;
+    color: var(--text-dark);
+    font-family: "Open Sans", Arial, sans-serif;
+}
+
+/* =========================================================
+   SIDEBAR (idêntica às outras páginas)
+   ========================================================= */
+.sidebar {
+    width: 260px;
+    background: var(--bg-white);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    padding: 24px 16px;
+    position: fixed;
+    height: 100vh;
+    z-index: 1000;
+    transition: width 0.3s ease;
+}
+
+.logo-main { display: flex; align-items: center; gap: 10px; padding: 4px 8px; }
+
+.logo-main h2 {
+    font-family: "myriad-pro", "Raleway", sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--text-dark);
+    line-height: 1.3;
+}
+
+.sidebar-divider {
+    border: none;
+    border-top: 1px solid var(--border-color);
+    margin: 14px 0;
+}
+
+nav { display: flex; flex-direction: column; gap: 4px; flex-grow: 1; }
+
+nav a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--text-gray);
+    text-decoration: none;
+    padding: 11px 14px;
+    border-radius: 12px;
+    font-size: 0.92rem;
+    font-weight: 500;
+    transition: background 0.2s, color 0.2s;
+}
+
+nav a i { font-size: 1.15rem; width: 22px; text-align: center; flex-shrink: 0; }
+nav a:hover { background: var(--sidebar-hover); color: var(--primary-blue); }
+nav a.active { background: var(--sidebar-active); color: var(--primary-blue); font-weight: 700; }
+
+/* O link ativo do WhatsApp fica verde */
+nav a.active.whatsapp-link {
+    background: #e8f8ef;
+    color: var(--whatsapp-dark);
+}
+
+.menu-toggle {
+    margin-top: auto;
+    background: none;
+    border: none;
+    color: var(--text-gray);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 14px;
+    border-radius: 12px;
+    font-size: 0.92rem;
+    font-weight: 500;
+    transition: background 0.2s, color 0.2s;
+}
+
+.menu-toggle:hover { background: var(--sidebar-active); color: var(--primary-blue); }
+
+/* Sidebar colapsada */
+.sidebar.collapsed { width: 72px; }
+.sidebar.collapsed + .content { margin-left: 72px; }
+.sidebar.collapsed .logo,
+.sidebar.collapsed .sidebar-divider,
+.sidebar.collapsed .nav-text { display: none; }
+.sidebar.collapsed nav a,
+.sidebar.collapsed .menu-toggle { justify-content: center; padding: 11px 0; gap: 0; }
+.sidebar.collapsed nav a i,
+.sidebar.collapsed .menu-toggle i { width: auto; margin: 0; }
+
+/* =========================================================
+   CONTEÚDO PRINCIPAL
+   ========================================================= */
+.content {
+    margin-left: 260px;
+    flex-grow: 1;
+    padding: 36px 48px;
+    transition: margin-left 0.3s ease;
+    min-width: 0;
+}
+
+/* =========================================================
+   CABEÇALHO
+   ========================================================= */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 28px;
+}
+
+header h1 {
+    font-family: "myriad-pro", "Raleway", sans-serif;
+    font-weight: 700;
+    font-size: 1.75rem;
+    color: var(--text-dark);
+}
+
+header span {
+    font-size: 0.92rem;
+    color: var(--text-gray);
+    display: block;
+    margin-top: 4px;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+/* =========================================================
+   BADGE DE STATUS DA CONEXÃO
+   Fica no cabeçalho mostrando se o WhatsApp está conectado.
+   ========================================================= */
+.status-badge-whatsapp {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    border: 1.5px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.status-conectado {
+    background: #e8f8ef;
+    color: var(--whatsapp-dark);
+    border-color: #a8e6c3;
+}
+
+.status-desconectado {
+    background: #fff5f5;
+    color: var(--danger-red);
+    border-color: #fed7d7;
+}
+
+.status-verificando {
+    background: #fefce8;
+    color: #854d0e;
+    border-color: #fef08a;
+}
+
+.status-erro {
+    background: #f8fafc;
+    color: var(--text-gray);
+    border-color: var(--border-color);
+}
+
+/* =========================================================
+   BOTÕES
+   ========================================================= */
+.btn-settings {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    color: var(--text-gray);
+    border: 1px solid var(--border-color);
+    padding: 9px 18px;
+    border-radius: var(--radius-btn);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+}
+
+.btn-settings:hover { background: var(--sidebar-hover); color: var(--text-dark); }
+
+/* Botão verde do WhatsApp (enviar mensagem) */
+.btn-whatsapp {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background-color: var(--whatsapp-green);
+    color: white;
+    border: none;
+    padding: 11px 24px;
+    border-radius: var(--radius-btn);
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+}
+
+.btn-whatsapp:hover:not(:disabled) {
+    background-color: var(--whatsapp-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(37, 211, 102, 0.35);
+}
+
+.btn-whatsapp:disabled {
+    background-color: #adb5bd;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background-color: var(--primary-blue);
+    color: white;
+    border: none;
+    padding: 10px 22px;
+    border-radius: var(--radius-btn);
+    font-size: 0.92rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+}
+
+.btn-primary:hover { background-color: var(--primary-hover); transform: translateY(-1px); }
+
+.btn-cancel {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-dark);
+    padding: 10px 22px;
+    border-radius: var(--radius-btn);
+    font-size: 0.92rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-cancel:hover { background: #f1f3f4; }
+
+.btn-atualizar-qr {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    color: var(--whatsapp-dark);
+    border: 1.5px solid var(--whatsapp-green);
+    padding: 9px 20px;
+    border-radius: var(--radius-btn);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-top: 16px;
+}
+
+.btn-atualizar-qr:hover { background: #e8f8ef; }
+
+/* =========================================================
+   CARD DE ALERTA DE CONEXÃO (QR CODE)
+   Aparece quando o WhatsApp está desconectado.
+   ========================================================= */
+#areaQRCode { margin-bottom: 24px; }
+
+.card-alerta-conexao {
+    background: var(--bg-white);
+    border: 1.5px solid #a8e6c3;
+    border-radius: var(--radius-card);
+    padding: 28px 32px;
+    box-shadow: var(--shadow-card);
+}
+
+.alerta-header {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 24px;
+}
+
+.alerta-header h3 {
+    font-family: "Raleway", sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 4px;
+}
+
+.alerta-header p {
+    font-size: 0.88rem;
+    color: var(--text-gray);
+}
+
+.qr-container {
+    display: flex;
+    gap: 40px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+}
+
+/* O placeholder enquanto o QR Code carrega */
+.qr-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 220px;
+    height: 220px;
+    background: #f8f9fa;
+    border: 2px dashed var(--border-color);
+    border-radius: 14px;
+    color: var(--text-gray);
+    font-size: 0.88rem;
+}
+
+.qr-placeholder img {
+    width: 220px;
+    height: 220px;
+    border-radius: 12px;
+    border: 3px solid var(--whatsapp-green);
+}
+
+.qr-instrucoes p { font-weight: 700; font-size: 0.92rem; margin-bottom: 12px; }
+
+.qr-instrucoes ol {
+    padding-left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 0.9rem;
+    color: #374151;
+    line-height: 1.6;
+}
+
+/* =========================================================
+   ABAS (TABS)
+   ========================================================= */
+.tabs-container {
+    border-bottom: 2px solid var(--border-color);
+    margin-bottom: 24px;
+}
+
+.tabs-list { display: flex; }
+
+.tab-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: none;
+    border: none;
+    padding: 11px 22px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-gray);
+    cursor: pointer;
+    position: relative;
+    transition: color 0.2s;
+}
+
+.tab-item:hover:not(.active) { color: var(--text-dark); background: #f8f9fa; }
+
+.tab-item.active { color: var(--primary-blue); }
+
+.tab-item.active::after {
+    content: "";
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--primary-blue);
+    border-radius: 2px 2px 0 0;
+}
+
+/* =========================================================
+   FORMULÁRIO DE ENVIO DE MENSAGEM
+   ========================================================= */
+.card-form-mensagem {
+    background: var(--bg-white);
+    border-radius: var(--radius-card);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+}
+
+.card-form-header {
+    padding: 24px 32px 20px;
+    border-bottom: 1px solid var(--border-color);
+    background: #fafafa;
+}
+
+.card-form-header h2 {
+    font-family: "Raleway", sans-serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--text-dark);
+}
+
+.card-form-header p {
+    font-size: 0.88rem;
+    color: var(--text-gray);
+    margin-top: 4px;
+}
+
+#formEnviarMensagem { padding: 28px 32px; }
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 24px;
+}
+
+.form-group h5 {
+    font-family: "Raleway", sans-serif;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #374151;
+}
+
+.form-group select,
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1.5px solid var(--border-color);
+    border-radius: var(--radius-input);
+    font-size: 0.95rem;
+    color: var(--text-dark);
+    background: #fafafa;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+    font-family: inherit;
+}
+
+.form-group select:focus,
+.form-group input:focus,
+.form-group textarea:focus {
+    border-color: var(--primary-blue);
+    background: var(--bg-white);
+    box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
+}
+
+.form-group textarea { resize: vertical; min-height: 110px; }
+
+/* Número do aluno que aparece abaixo do seletor */
+.numero-preview {
+    font-size: 0.82rem;
+    color: var(--whatsapp-dark);
+    font-weight: 600;
+    background: #e8f8ef;
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid #a8e6c3;
+    align-self: flex-start;
+}
+
+.helper-text {
+    font-size: 0.8rem;
+    color: var(--text-gray);
+}
+
+/* =========================================================
+   GRID DE TEMPLATES
+   Os cards de seleção de tipo de mensagem.
+   ========================================================= */
+.template-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 12px;
+}
+
+.template-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    background: #fafafa;
+    border: 1.5px solid var(--border-color);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+}
+
+.template-card:hover {
+    border-color: #a8c8f0;
+    background: #f0f6ff;
+}
+
+.template-card.selecionado {
+    border-color: var(--whatsapp-green);
+    background: #e8f8ef;
+    box-shadow: 0 0 0 3px rgba(37, 211, 102, 0.12);
+}
+
+.template-emoji { font-size: 1.5rem; line-height: 1; flex-shrink: 0; margin-top: 2px; }
+
+.template-texto strong {
+    display: block;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 3px;
+}
+
+.template-texto p {
+    font-size: 0.8rem;
+    color: var(--text-gray);
+    line-height: 1.4;
+}
+
+/* =========================================================
+   PRÉVIA DA MENSAGEM
+   Simula um balão de WhatsApp para mostrar como ficará.
+   ========================================================= */
+.preview-mensagem {
+    background: #e7f5e0;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-top: 4px;
+    border: 1px solid #c3e6ad;
+}
+
+.preview-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: rgba(0,0,0,0.04);
+    border-bottom: 1px solid #c3e6ad;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: var(--whatsapp-dark);
+}
+
+.preview-corpo {
+    padding: 16px;
+    font-size: 0.92rem;
+    color: #1c2833;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    font-family: "Open Sans", sans-serif;
+}
+
+/* =========================================================
+   AÇÕES DO FORMULÁRIO
+   ========================================================= */
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+    margin-top: 8px;
+}
+
+/* =========================================================
+   TABELA DE HISTÓRICO
+   ========================================================= */
+.table-container {
+    background: var(--bg-white);
+    border-radius: var(--radius-card);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+}
+
+.mensagens-table { width: 100%; border-collapse: collapse; }
+
+.mensagens-table thead th {
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    padding: 14px 18px;
+    color: var(--text-gray);
+    background: #fafafa;
+    border-bottom: 2px solid var(--border-color);
+    text-align: left;
+    white-space: nowrap;
+}
+
+.mensagens-table tbody tr { transition: background 0.15s; }
+.mensagens-table tbody tr:hover { background: #f8f9ff; }
+
+.mensagens-table td {
+    padding: 13px 18px;
+    font-size: 0.88rem;
+    color: #374151;
+    border-bottom: 1px solid #f3f4f6;
+    vertical-align: middle;
+}
+
+/* Badge do tipo de mensagem */
+.badge-tipo {
+    display: inline-block;
+    background: #eff6ff;
+    color: #2563eb;
+    border: 1px solid #bfdbfe;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+/* Badge de status (enviado / erro) */
+.badge-status-msg {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.badge-status-msg.enviado {
+    background: #e8f8ef;
+    color: var(--whatsapp-dark);
+    border: 1px solid #a8e6c3;
+}
+
+.badge-status-msg.erro {
+    background: #fff5f5;
+    color: var(--danger-red);
+    border: 1px solid #fed7d7;
+}
+
+.no-data {
+    text-align: center;
+    padding: 56px 20px;
+    color: #adb5bd;
+    font-style: italic;
+    font-size: 0.92rem;
+}
+
+/* =========================================================
+   MODAL DE CONFIGURAÇÕES
+   ========================================================= */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.45);
+    backdrop-filter: blur(3px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
+
+.modal-config-card {
+    background: var(--bg-white);
+    width: 90%;
+    max-width: 520px;
+    border-radius: 18px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+    overflow: hidden;
+    animation: slideUp 0.3s ease;
+}
+
+.modal-config-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 22px 26px;
+    border-bottom: 1px solid var(--border-color);
+    background: #fafafa;
+}
+
+.modal-config-header h2 {
+    font-family: "Raleway", sans-serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--text-dark);
+}
+
+.modal-config-header p {
+    font-size: 0.85rem;
+    color: var(--text-gray);
+    margin-top: 4px;
+}
+
+.btn-fechar-modal {
+    background: none;
+    border: none;
+    font-size: 1.1rem;
+    color: var(--text-gray);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 6px;
+    transition: background 0.2s, color 0.2s;
+    flex-shrink: 0;
+}
+
+.btn-fechar-modal:hover { background: #f1f3f4; color: var(--text-dark); }
+
+.modal-config-body { padding: 24px 26px; display: flex; flex-direction: column; gap: 20px; }
+
+/* Caixa de informação (fundo azul claro) */
+.info-box {
+    display: flex;
+    gap: 14px;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 12px;
+    padding: 14px 16px;
+    font-size: 0.88rem;
+    color: #1e40af;
+    line-height: 1.5;
+}
+
+.info-box i { font-size: 1.2rem; flex-shrink: 0; margin-top: 2px; }
+.info-box p { margin-top: 4px; color: #374151; }
+
+/* Campo com botão de mostrar/esconder senha */
+.input-com-olho {
+    display: flex;
+    border: 1.5px solid var(--border-color);
+    border-radius: var(--radius-input);
+    overflow: hidden;
+    background: #fafafa;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input-com-olho:focus-within {
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 3px rgba(26,115,232,0.1);
+}
+
+.input-com-olho input {
+    flex: 1;
+    padding: 11px 14px;
+    border: none;
+    background: transparent;
+    font-size: 0.95rem;
+    outline: none;
+}
+
+.btn-olho {
+    background: none;
+    border: none;
+    border-left: 1px solid var(--border-color);
+    padding: 0 14px;
+    cursor: pointer;
+    color: var(--text-gray);
+    transition: color 0.2s;
+}
+
+.btn-olho:hover { color: var(--text-dark); }
+
+.modal-config-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 16px 26px;
+    border-top: 1px solid var(--border-color);
+}
+
+/* =========================================================
+   TOASTS (notificações flutuantes)
+   ========================================================= */
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.toast {
+    display: flex;
+    align-items: center;
+    min-width: 300px;
+    padding: 13px 18px;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    font-size: 0.9rem;
+    animation: slideIn 0.3s ease-out;
+}
+
+.toast.sucesso { background: #e8f8ef; border: 1px solid #a8e6c3; color: #14532d; }
+.toast.erro    { background: #fff5f5; border: 1px solid #fed7d7; color: #742a2a; }
+.toast-icon    { margin-right: 10px; }
+
+/* =========================================================
+   ANIMAÇÕES
+   ========================================================= */
+
+/* Ícone girando (loading) */
+.spinning {
+    display: inline-block;
+    animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to   { transform: translateX(0); opacity: 1; }
+}

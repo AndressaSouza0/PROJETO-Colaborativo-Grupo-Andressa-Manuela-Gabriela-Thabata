@@ -243,23 +243,27 @@ btnFinalizar.onclick = async () => {
 
         if (errorEx) throw errorEx;
 
-        // 3. CHAMADA DA EDGE FUNCTION DO SUPABASE PARA ENVIO DE E-MAIL
-        // Enviamos os dados para a função que criamos no Supabase
-        const { data: emailData, error: emailError } = await supabaseClient.functions.invoke('confirmacao-emprestimo', {
-            body: {
-                email: alunoSelecionado.email_institucional, // Nome da coluna no seu banco
-                nome: alunoSelecionado.nome_aluno,
-                livro: livroSelecionado.titulo,
-                dataEmprestimo: hoje.toLocaleDateString('pt-BR'),
-                dataDevolucao: dataPrevista.toLocaleDateString('pt-BR')
-            }
-        });
+        // 3. ENVIAR CONFIRMAÇÃO PELO WHATSAPP
+        // Só envia se o aluno tiver número cadastrado e a API estiver configurada
+        if (alunoSelecionado.telefone && typeof ChatbotAPI !== 'undefined') {
+            const dataDevolucaoFormatada = dataPrevista.toLocaleDateString('pt-BR');
 
-        if (emailError) {
-            console.error("Erro na função de e-mail:", emailError);
-            showToast("Empréstimo salvo, mas o e-mail falhou.", "error");
+            const resultado = await ChatbotAPI.enviarConfirmacaoEmprestimo(
+                alunoSelecionado.nome_aluno,
+                alunoSelecionado.telefone,
+                livroSelecionado.titulo,
+                dataDevolucaoFormatada
+            );
+
+            if (!resultado.sucesso) {
+                console.warn("Aviso no envio da mensagem:", resultado.erro);
+                showToast("Empréstimo salvo, mas a mensagem não foi enviada.", "error");
+            } else {
+                showToast("Empréstimo registrado e mensagem enviada com sucesso!");
+            }
         } else {
-            showToast("Empréstimo registrado e e-mail enviado!");
+            // Aluno sem telefone ou API não configurada — só confirma o empréstimo
+            showToast("Empréstimo registrado com sucesso!");
         }
 
         fecharCadastro();

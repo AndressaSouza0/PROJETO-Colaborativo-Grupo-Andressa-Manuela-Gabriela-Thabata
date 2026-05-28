@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Bibliotecário - WhatsApp</title>
+
+    <!-- Fontes e ícones (mesmo padrão das outras páginas) -->
+    <link rel="stylesheet" href="https://use.typekit.net/piq3igt.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300..800&family=Raleway:wght@100..900&display=swap" rel="stylesheet">
+
+    <!-- CSS desta página -->
+    <link rel="stylesheet" href="/Fronted sistema/chatbot/chatbot.css">
+</head>
+<body>
+
+    <!-- =====================================================
+         SIDEBAR — MENU LATERAL
+         "WhatsApp" está marcado como active (página atual).
+         O ícone bi-whatsapp já vem no Bootstrap Icons.
+    ====================================================== -->
+    <aside class="sidebar" id="sidebar">
+        <div class="logo">
+            <div class="logo-main" style="display: flex; align-items: center; gap: 10px;">
+                <i class="bi bi-book" style="font-size: 1.8rem; color: var(--primary-blue);"></i>
+                <h2>Biblioteca Jorge Amado</h2>
+            </div>
+        </div>
+        <hr class="sidebar-divider">
+        <nav>
+            <a href="/Fronted sistema/dashboard/dashboard.html"><i class="bi bi-menu-app"></i> <span class="nav-text">Dashboard</span></a>
+            <a href="/Fronted sistema/cadastro de livro/cadastro.html"><i class="bi bi-book"></i> <span class="nav-text">Livros</span></a>
+            <a href="/Fronted sistema/cadastro de doações/doações.html"><i class="bi bi-heart"></i> <span class="nav-text">Doações</span></a>
+            <a href="/Fronted sistema/cadastro de alunos/alunos.html"><i class="bi bi-person-add"></i> <span class="nav-text">Alunos</span></a>
+            <a href="/Fronted sistema/Empréstimo/emprestimo.html"><i class="bi bi-layout-text-sidebar-reverse"></i> <span class="nav-text">Empréstimo</span></a>
+            <a href="/Fronted sistema/chatbot/chatbot.html" class="active whatsapp-link">
+                <i class="bi bi-whatsapp"></i> <span class="nav-text">WhatsApp</span>
+            </a>
+        </nav>
+        <button class="menu-toggle" onclick="toggleSidebar()">
+            <i class="bi bi-caret-left" id="menu-icon"></i>
+            <span class="nav-text">Minimizar</span>
+        </button>
+    </aside>
+
+    <!-- =====================================================
+         CONTEÚDO PRINCIPAL
+    ====================================================== -->
+    <main class="content">
+
+        <!-- CABEÇALHO DA PÁGINA -->
+        <header>
+            <div>
+                <h1>Central de Mensagens</h1>
+                <span>Envie notificações pelo WhatsApp para os alunos da biblioteca.</span>
+            </div>
+            <div class="header-actions">
+                <!-- Badge que mostra se o WhatsApp está conectado ou não.
+                     O chatbot.js atualiza esse badge a cada 30 segundos. -->
+                <div id="statusConexao" class="status-badge-whatsapp status-verificando">
+                    <span id="statusTexto">● Verificando...</span>
+                </div>
+                <!-- Abre o modal de configurações da Evolution API -->
+                <button class="btn-settings" onclick="abrirConfiguracoes()">
+                    <i class="bi bi-gear"></i> Configurações
+                </button>
+            </div>
+        </header>
+
+        <!-- =====================================================
+             ÁREA DO QR CODE
+             Aparece automaticamente quando o WhatsApp está
+             desconectado. Esconde quando conecta.
+        ====================================================== -->
+        <div id="areaQRCode" style="display: none;">
+            <div class="card-alerta-conexao">
+                <div class="alerta-header">
+                    <i class="bi bi-qr-code" style="font-size: 2.2rem; color: var(--whatsapp-green);"></i>
+                    <div>
+                        <h3>Conectar WhatsApp</h3>
+                        <p>Escaneie o QR Code abaixo com o WhatsApp do celular para ativar o envio de mensagens.</p>
+                    </div>
+                </div>
+
+                <div class="qr-container">
+                    <!-- O QR Code é carregado aqui pelo chatbot.js -->
+                    <div id="qrCodeImg" class="qr-placeholder">
+                        <i class="bi bi-arrow-repeat spinning" style="font-size: 2rem;"></i>
+                        <span>Carregando QR Code...</span>
+                    </div>
+
+                    <div class="qr-instrucoes">
+                        <p>Como conectar:</p>
+                        <ol>
+                            <li>Abra o <strong>WhatsApp</strong> no celular.</li>
+                            <li>Toque nos três pontos (⋮) e vá em <strong>Dispositivos conectados</strong>.</li>
+                            <li>Toque em <strong>Conectar um dispositivo</strong>.</li>
+                            <li>Aponte a câmera para o QR Code ao lado.</li>
+                            <li>Aguarde a confirmação na tela.</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <button class="btn-atualizar-qr" onclick="carregarQRCode()">
+                    <i class="bi bi-arrow-clockwise"></i> Atualizar QR Code
+                </button>
+            </div>
+        </div>
+
+        <!-- =====================================================
+             ABAS: ENVIAR MENSAGEM / HISTÓRICO
+        ====================================================== -->
+        <div class="tabs-container">
+            <div class="tabs-list">
+                <button class="tab-item active" data-tab="enviar" onclick="mudarAba(this)">
+                    <i class="bi bi-send"></i> Enviar Mensagem
+                </button>
+                <button class="tab-item" data-tab="historico" onclick="mudarAba(this)">
+                    <i class="bi bi-clock-history"></i> Histórico de Envios
+                </button>
+            </div>
+        </div>
+
+        <!-- =====================================================
+             ABA: ENVIAR MENSAGEM
+        ====================================================== -->
+        <div id="aba-enviar" class="tab-content">
+            <div class="card-form-mensagem">
+                <div class="card-form-header">
+                    <h2>Enviar mensagem para um aluno</h2>
+                    <p>Escolha o aluno, selecione o tipo de mensagem e envie.</p>
+                </div>
+
+                <form id="formEnviarMensagem">
+
+                    <!-- PASSO 1: Selecionar o aluno -->
+                    <div class="form-group">
+                        <h5>1. Aluno</h5>
+                        <!-- O chatbot.js preenche as opções deste seletor
+                             buscando os alunos no Supabase -->
+                        <select id="selectAluno" required>
+                            <option value="">Selecione um aluno...</option>
+                        </select>
+                        <!-- Mostra o número do aluno assim que ele é selecionado -->
+                        <span id="numeroAlunoPreview" class="numero-preview" style="display: none;"></span>
+                    </div>
+
+                    <!-- PASSO 2: Selecionar o tipo de mensagem -->
+                    <div class="form-group">
+                        <h5>2. Tipo de Mensagem</h5>
+                        <!-- Os cards de template são criados pelo chatbot.js (renderizarTemplates) -->
+                        <div class="template-grid" id="templateGrid"></div>
+                    </div>
+
+                    <!-- PASSO 3: Mensagem personalizada (só aparece se escolher "Personalizada") -->
+                    <div class="form-group" id="grupoMensagemCustom" style="display: none;">
+                        <h5>3. Escreva sua mensagem</h5>
+                        <textarea
+                            id="mensagemCustom"
+                            placeholder="Digite a mensagem que será enviada ao aluno..."
+                        ></textarea>
+                        <span class="helper-text">
+                            Use *asteriscos* para deixar o texto em <strong>negrito</strong> no WhatsApp.
+                        </span>
+                    </div>
+
+                    <!-- PRÉVIA: mostra como a mensagem vai chegar no WhatsApp -->
+                    <div class="preview-mensagem" id="previewMensagem" style="display: none;">
+                        <div class="preview-header">
+                            <i class="bi bi-eye"></i> Prévia — como o aluno vai receber
+                        </div>
+                        <div class="preview-corpo" id="previewCorpo"></div>
+                    </div>
+
+                    <!-- BOTÕES DE AÇÃO -->
+                    <div class="form-actions">
+                        <button type="button" class="btn-cancel" onclick="limparFormulario()">
+                            Limpar
+                        </button>
+                        <button type="submit" class="btn-whatsapp" id="btnEnviar">
+                            <i class="bi bi-whatsapp"></i> Enviar pelo WhatsApp
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+
+        <!-- =====================================================
+             ABA: HISTÓRICO DE ENVIOS
+        ====================================================== -->
+        <div id="aba-historico" class="tab-content" style="display: none;">
+            <div class="table-container">
+                <table class="mensagens-table">
+                    <thead>
+                        <tr>
+                            <th>Aluno</th>
+                            <th>Número</th>
+                            <th>Tipo de Mensagem</th>
+                            <th>Data / Hora</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <!-- Preenchido pelo chatbot.js (carregarHistorico) -->
+                    <tbody id="historicoTableBody"></tbody>
+                </table>
+                <div id="semHistorico" class="no-data" style="display: none;">
+                    Nenhuma mensagem enviada ainda.
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+
+    <!-- =====================================================
+         MODAL DE CONFIGURAÇÕES DA API
+         O usuário preenche uma única vez.
+         Os dados ficam salvos no navegador (localStorage).
+    ====================================================== -->
+    <div id="modalConfiguracoes" class="modal-overlay" style="display: none;">
+        <div class="modal-config-card">
+
+            <div class="modal-config-header">
+                <div>
+                    <h2>Configurações da Evolution API</h2>
+                    <p>Preencha com os dados do servidor WhatsApp gratuito.</p>
+                </div>
+                <button class="btn-fechar-modal" onclick="fecharConfiguracoes()">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+
+            <div class="modal-config-body">
+
+                <!-- Caixa de ajuda explicando como obter os dados -->
+                <div class="info-box">
+                    <i class="bi bi-info-circle-fill"></i>
+                    <div>
+                        <strong>Como conseguir esses dados gratuitamente?</strong>
+                        <p>
+                            Crie uma conta em <strong>railway.app</strong>, faça o deploy da
+                            <strong>Evolution API</strong> (é gratuito) e copie a URL gerada.
+                            O nome da instância e a chave você define durante a configuração.
+                            O guia oficial está em <strong>evolution-api.com</strong>.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- URL do servidor -->
+                <div class="form-group">
+                    <h5>URL do Servidor (Evolution API)</h5>
+                    <input
+                        type="url"
+                        id="configBaseUrl"
+                        placeholder="https://sua-api.railway.app"
+                    >
+                    <span class="helper-text">Endereço onde sua Evolution API está hospedada.</span>
+                </div>
+
+                <!-- Nome da instância -->
+                <div class="form-group">
+                    <h5>Nome da Instância</h5>
+                    <input
+                        type="text"
+                        id="configInstancia"
+                        placeholder="biblioteca-jorge-amado"
+                    >
+                    <span class="helper-text">
+                        Nome que você deu para a instância na Evolution API.
+                        É como se fosse o "apelido" do seu WhatsApp no servidor.
+                    </span>
+                </div>
+
+                <!-- Chave da API -->
+                <div class="form-group">
+                    <h5>Chave da API (apikey)</h5>
+                    <div class="input-com-olho">
+                        <input
+                            type="password"
+                            id="configApiKey"
+                            placeholder="sua-chave-secreta"
+                        >
+                        <!-- Botão de olho para mostrar/esconder a chave -->
+                        <button type="button" class="btn-olho" onclick="alternarVisibilidadeSenha()">
+                            <i class="bi bi-eye" id="iconeOlho"></i>
+                        </button>
+                    </div>
+                    <span class="helper-text">
+                        Chave de autenticação definida durante a configuração do servidor.
+                        Funciona como uma senha para proteger sua API.
+                    </span>
+                </div>
+
+            </div>
+
+            <div class="modal-config-footer">
+                <button class="btn-cancel" onclick="fecharConfiguracoes()">Cancelar</button>
+                <button class="btn-primary" onclick="salvarConfiguracoes()">
+                    <i class="bi bi-check-lg"></i> Salvar e Conectar
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Container dos toasts (notificações flutuantes) -->
+    <div id="toast-container" class="toast-container"></div>
+
+
+    <!-- =====================================================
+         SCRIPTS
+         A ordem importa:
+         1. Supabase (biblioteca externa)
+         2. conexao-api.js (funções da Evolution API)
+         3. chatbot.js (lógica da tela — usa as funções acima)
+    ====================================================== -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/Fronted sistema/chatbot/conexao-api.js"></script>
+    <script src="/Fronted sistema/chatbot/chatbot.js"></script>
+
+</body>
+</html>

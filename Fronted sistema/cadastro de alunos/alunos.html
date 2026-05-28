@@ -26,12 +26,12 @@
 <hr class="sidebar-divider">
         </div>
         <nav>
-            <a href="#"><i class="bi bi-menu-app"></i></i> <span class="nav-text">Dashboard</span></a>
+            <a href="/Fronted sistema/dashboard/dashboard.html"><i class="bi bi-menu-app"></i> <span class="nav-text">Dashboard</span></a>
             <a href="/Fronted sistema/cadastro de livro/cadastro.html"><i class="bi bi-book"></i></i> <span class="nav-text">Livros</span></a>
             <a href="/Fronted sistema/cadastro de doações/doações.html"><i class="bi bi-heart"></i></i> <span class="nav-text">Doações</span></a>
             <a href="/Fronted sistema/cadastro de alunos/alunos.html" class="active" style="font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif ;font-optical-sizing: auto; font-weight: 550;"><i class="bi bi-person-add"></i></i> <span class="nav-text">Alunos</span></a>
             <a href="/Fronted sistema/Empréstimo/emprestimo.html"><i class="bi bi-layout-text-sidebar-reverse"></i></i> <span class="nav-text">Empréstimo</span></a>
-            <a href="#"><i class="bi bi-envelope-at"></i></i> <span class="nav-text">Email</span></a>
+            <a href="/Fronted sistema/chatbot/chatbot.html"><i class="bi bi-whatsapp"></i> <span class="nav-text">WhatsApp</span></a>
         </nav>
        
          <button class="menu-toggle" onclick="toggleSidebar()">
@@ -108,6 +108,13 @@
                         <div class="form-group">
                              <h5>Instituição *</h5>
                             <input type="text" id="instituicao" placeholder="Direção Responsável" readonly>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <h5>Número de Celular</h5>
+                            <input type="tel" id="telefone" placeholder="(11) 99999-9999"
+                                   oninput="mascaraTelefone(this)" maxlength="15">
                         </div>
                     </div>
                     <div class="form-row">
