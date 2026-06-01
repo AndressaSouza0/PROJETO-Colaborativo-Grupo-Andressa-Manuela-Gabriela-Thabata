@@ -88,16 +88,20 @@ async function listarAlunos() {
         <tr>
             <td>${aluno.ra}</td>
             <td>${aluno.nome_aluno}</td>
-            <td>${aluno.serie} - ${aluno.turma}</td>
-            <td>${aluno.ensino}</td>
-            <td>${aluno.email_institucional}</td>
+            <td>${aluno.serie || '—'} - ${aluno.turma || '—'}</td>
+            <td>${aluno.ensino || '—'}</td>
+            <td>${aluno.instituicao || '—'}</td>
+            <td>${aluno.email_institucional || '—'}</td>
             <td><span class="status-badge ${statusClass}">${aluno.status || 'Ativo'}</span></td>
             <td>
-                <div class="acoes-container">
-                    <button class="btn-action ${btnClass}" onclick="alternarStatus('${aluno.ra}', '${aluno.status}')" title="Alternar Status">
+                <div class="tabela-acoes">
+                    <button class="btn-edit" onclick="abrirEditarAluno('${aluno.ra}')" title="Editar aluno">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn-action ${btnClass}" onclick="alternarStatus('${aluno.ra}', '${aluno.status}')" title="${isBloqueado ? 'Ativar aluno' : 'Bloquear aluno'}">
                         <i class="bi ${btnIcon}"></i>
-                    </button></td>
-                    <td><button class="btn-delete" onclick="openDeleteModal('${aluno.ra}', '${aluno.nome_aluno}')" title="Excluir">
+                    </button>
+                    <button class="btn-delete" onclick="openDeleteModal('${aluno.ra}', '${aluno.nome_aluno}')" title="Excluir aluno">
                         <i class="bi bi-trash"></i>
                     </button>
                 </div>
@@ -162,16 +166,21 @@ formAluno.onsubmit = async (e) => {
     }
 };
 
-// Deletar Aluno
 let raParaExcluir = null;
 function openDeleteModal(ra, nome) {
     raParaExcluir = ra;
     document.getElementById('nomeAlunoExcluir').textContent = nome;
-    document.getElementById('deleteModal').style.display = 'flex';
+    document.getElementById('raAlunoExcluirInfo').textContent = 'RA: ' + ra;
+    document.getElementById('deleteModal').classList.add('ativo');
+    document.body.style.overflow = 'hidden';
 }
-
 function fecharModal() {
-    document.getElementById('deleteModal').style.display = 'none';
+    document.getElementById('deleteModal').classList.remove('ativo');
+    document.body.style.overflow = '';
+}
+function fecharDeleteAluno(event) {
+    if (event && event.target !== document.getElementById('deleteModal')) return;
+    fecharModal();
 }
 
 document.getElementById('confirmDeleteBtn').onclick = async () => {
@@ -181,20 +190,122 @@ document.getElementById('confirmDeleteBtn').onclick = async () => {
 };
 
 function toggleSidebar() {
-    // 1. Seleciona a sidebar (ajuste o seletor se a sua tiver um ID ou classe diferente)
-    const sidebar = document.querySelector('.sidebar'); 
-    
-    // 2. Liga/Desliga a classe que encolhe a barra
-    sidebar.classList.toggle('collapsed');
-    
-    // 3. Muda o ícone de seta para a direita ou esquerda
-    const icon = document.getElementById('menu-icon');
-    if (sidebar.classList.contains('collapsed')) {
-        icon.className = 'bi bi-caret-right'; // Seta pra direita quando fechado
-    } else {
-        icon.className = 'bi bi-caret-left';  // Seta pra esquerda quando aberto
-    }
+    document.querySelector('.sidebar').classList.toggle('collapsed');
+}
+
+function toggleMobileSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    sidebar.classList.toggle('mobile-open');
+    overlay.classList.toggle('active');
+    document.body.style.overflow = sidebar.classList.contains('mobile-open') ? 'hidden' : '';
+}
+
+function closeMobileSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    sidebar.classList.remove('mobile-open');
+    overlay.classList.remove('active');
+    document.body.style.overflow = '';
 }
 
 // Inicialização
 listarAlunos();
+
+/* ================================================================
+   USUÁRIO LOGADO — sidebar e modal de saída
+   ================================================================ */
+function carregarUsuario() {
+    document.querySelectorAll('nav a').forEach(link => {
+        const texto = link.querySelector('.nav-text');
+        if (texto) link.setAttribute('data-tip', texto.textContent.trim());
+    });
+    const admin = JSON.parse(sessionStorage.getItem('admin') || 'null');
+    if (!admin) return;
+    const primeiroNome = admin.nome ? admin.nome.split(' ')[0] : '—';
+    const elNome   = document.getElementById('sidebarNome');
+    const elCargo  = document.getElementById('sidebarCargo');
+    const elMNome  = document.getElementById('modalNome');
+    const elMCargo = document.getElementById('modalCargo');
+    if (elNome)   elNome.textContent   = primeiroNome;
+    if (elCargo)  elCargo.textContent  = admin.cargo  || '';
+    if (elMNome)  elMNome.textContent  = admin.nome   || '—';
+    if (elMCargo) elMCargo.textContent = admin.cargo  || '—';
+}
+function abrirModalSair() {
+    document.getElementById('modalSair').classList.add('ativo');
+    document.body.style.overflow = 'hidden';
+}
+function fecharModalSair(event) {
+    if (event && event.target !== document.getElementById('modalSair')) return;
+    document.getElementById('modalSair').classList.remove('ativo');
+    document.body.style.overflow = '';
+}
+function confirmarSaida() {
+    sessionStorage.removeItem('admin');
+    window.location.href = '/Fronted sistema/login/login.html';
+}
+document.addEventListener('DOMContentLoaded', carregarUsuario);
+
+/* ================================================================
+   EDITAR ALUNO
+   ================================================================ */
+async function abrirEditarAluno(ra) {
+    try {
+        const { data, error } = await supabaseClient.from('alunos').select('*').eq('ra', ra).single();
+        if (error || !data) { alert('Erro ao carregar aluno.'); return; }
+
+        document.getElementById('editRa').value = ra;
+        document.getElementById('editRaLabel').textContent = 'RA: ' + ra;
+        document.getElementById('editNomeAluno').value = data.nome_aluno || '';
+        document.getElementById('editTurma').value = data.turma || '';
+        document.getElementById('editTelefone').value = data.telefone || '';
+        document.getElementById('editEmailInstitucional').value = data.email_institucional || '';
+        document.getElementById('editEnsino').value = data.ensino || '';
+        atualizarSeriesEdicao();
+        setTimeout(() => { document.getElementById('editSerie').value = data.serie || ''; }, 50);
+
+        document.getElementById('modalEditarAluno').classList.add('ativo');
+        document.body.style.overflow = 'hidden';
+    } catch(e) { alert('Erro ao abrir edição do aluno.'); }
+}
+
+function atualizarSeriesEdicao() {
+    const ensino = document.getElementById('editEnsino').value;
+    const sel = document.getElementById('editSerie');
+    const fund = ['6º Ano','7º Ano','8º Ano','9º Ano'];
+    const medio = ['1ª Série','2ª Série','3ª Série'];
+    const series = ensino === 'Fundamental' ? fund : ensino === 'Médio' ? medio : [];
+    sel.innerHTML = series.length === 0
+        ? '<option value="">Selecione o ensino primeiro</option>'
+        : series.map(s => `<option value="${s}">${s}</option>`).join('');
+}
+
+function fecharEditarAluno(event) {
+    if (event && event.target !== document.getElementById('modalEditarAluno')) return;
+    document.getElementById('modalEditarAluno').classList.remove('ativo');
+    document.body.style.overflow = '';
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('formEditarAluno');
+    if (!form) return;
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const ra = document.getElementById('editRa').value;
+        const payload = {
+            nome_aluno:          document.getElementById('editNomeAluno').value.trim(),
+            ensino:              document.getElementById('editEnsino').value,
+            serie:               document.getElementById('editSerie').value,
+            turma:               document.getElementById('editTurma').value.trim(),
+            telefone:            document.getElementById('editTelefone').value.trim(),
+            email_institucional: document.getElementById('editEmailInstitucional').value.trim(),
+        };
+        const btn = e.target.querySelector('button[type=submit]');
+        btn.disabled = true;
+        const { error } = await supabaseClient.from('alunos').update(payload).eq('ra', ra);
+        btn.disabled = false;
+        if (error) { alert('Erro ao salvar: ' + error.message); }
+        else { fecharEditarAluno(); listarAlunos(); }
+    });
+});

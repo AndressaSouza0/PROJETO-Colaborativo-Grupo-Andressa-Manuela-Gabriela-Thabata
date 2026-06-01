@@ -10,11 +10,13 @@
      <link rel="stylesheet" href="https://use.typekit.net/piq3igt.css">
     <link rel="stylesheet" href="/cadastro de livro/cadastro.css">
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300..800&family=Raleway:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/Fronted sistema/logout-modal.css">
 </head>
 <body>
-<aside class="sidebar" id="sidebar">
+<!-- Overlay do sidebar no mobile -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeMobileSidebar()"></div>
 
-<hr class="sidebar-divider">
+<aside class="sidebar" id="sidebar">
 
         <div class="logo">
             <div class="logo">
@@ -34,6 +36,17 @@
             <a href="/Fronted sistema/chatbot/chatbot.html"><i class="bi bi-whatsapp"></i> <span class="nav-text">WhatsApp</span></a>
         </nav>
        
+        <hr class="sidebar-divider">
+        <button class="usuario-sidebar" id="usuarioSidebar" onclick="abrirModalSair()">
+            <div class="avatar-usuario">
+                <i class="bi bi-person-circle"></i>
+            </div>
+            <div class="info-usuario nav-text">
+                <span class="nome-usuario" id="sidebarNome">—</span>
+                <span class="cargo-usuario" id="sidebarCargo"></span>
+            </div>
+            <i class="bi bi-box-arrow-right icone-sair nav-text"></i>
+        </button>
          <button class="menu-toggle" onclick="toggleSidebar()">
             <i class="bi bi-caret-left" id="menu-icon"><span class="nav-text">Minimizar</span></i>
         </button>
@@ -41,9 +54,12 @@
     </aside>
     <main class="content">
         <header>
-            <div>
-                <h1>Gerenciamento de Alunos</h1>
-                <span>Cadastre e gerencie os alunos da instituição.</span>
+            <div style="display:flex; align-items:center; gap:12px;">
+                <button class="btn-mobile-menu" onclick="toggleMobileSidebar()"><i class="bi bi-list"></i></button>
+                <div>
+                    <h1>Gerenciamento de Alunos</h1>
+                    <span>Cadastre e gerencie os alunos da instituição.</span>
+                </div>
             </div>
             <div class="header-actions">
                 <button id="openModal" class="btn-primary">
@@ -155,19 +171,113 @@
         </div>
     </main>
 
-    <div id="deleteModal" class="modal-overlay-deletealuno" style="display: none;">
-        <div class="modal-content-deletelivro">
-            <i class="bi bi-exclamation-triangle" style="color: #d9534f; font-size: 2rem;"></i>
-            <h3>Excluir Aluno</h3>
-            <p>Tem certeza que deseja excluir o aluno <strong id="nomeAlunoExcluir"></strong>?</p>
-            <div class="modal-footer-deletelivro">
-                <button onclick="fecharModal()">Cancelar</button>
-                <button id="confirmDeleteBtn" class="btn-danger">Excluir</button>
+    <div id="deleteModal" class="modal-overlay" onclick="fecharDeleteAluno(event)">
+        <div class="modal-card-sair">
+            <div class="modal-icone-sair">
+                <i class="bi bi-person-dash"></i>
+            </div>
+            <h3>Excluir aluno?</h3>
+            <p>Esta ação é permanente e não pode ser desfeita.</p>
+            <div class="modal-usuario-card">
+                <i class="bi bi-person-circle" style="color:#e53e3e; font-size:2rem"></i>
+                <div>
+                    <strong id="nomeAlunoExcluir">—</strong>
+                    <span id="raAlunoExcluirInfo">—</span>
+                </div>
+            </div>
+            <div class="modal-acoes">
+                <button class="btn-modal-cancelar" onclick="fecharModal()">Cancelar</button>
+                <button class="btn-modal-sair" id="confirmDeleteBtn">
+                    <i class="bi bi-trash3"></i> Excluir aluno
+                </button>
             </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="/Fronted sistema/cadastro de alunos/alunos.js"></script>
+
+    <!-- Modal editar aluno -->
+    <div class="modal-overlay" id="modalEditarAluno" onclick="fecharEditarAluno(event)">
+        <div class="modal-edit-card">
+            <div class="modal-edit-header">
+                <div class="modal-edit-header-icone">
+                    <i class="bi bi-person-gear"></i>
+                </div>
+                <div class="modal-edit-header-text">
+                    <h3>Editar Aluno</h3>
+                    <span id="editRaLabel">—</span>
+                </div>
+                <button class="modal-edit-close" onclick="fecharEditarAluno()" type="button">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <form id="formEditarAluno">
+                <input type="hidden" id="editRa">
+                <div class="edit-form-grid">
+                    <div class="edit-field col-span-2">
+                        <label>Nome completo *</label>
+                        <input type="text" id="editNomeAluno" required placeholder="Nome do aluno">
+                    </div>
+                    <div class="edit-field">
+                        <label>Ensino *</label>
+                        <select id="editEnsino" required onchange="atualizarSeriesEdicao()">
+                            <option value="">Selecione...</option>
+                            <option value="Fundamental">Ensino Fundamental</option>
+                            <option value="Médio">Ensino Médio</option>
+                        </select>
+                    </div>
+                    <div class="edit-field">
+                        <label>Série *</label>
+                        <select id="editSerie" required>
+                            <option value="">Selecione o ensino primeiro</option>
+                        </select>
+                    </div>
+                    <div class="edit-field">
+                        <label>Turma</label>
+                        <input type="text" id="editTurma" placeholder="Ex: A, B, C">
+                    </div>
+                    <div class="edit-field">
+                        <label>Telefone</label>
+                        <input type="tel" id="editTelefone" placeholder="(11) 99999-9999">
+                    </div>
+                    <div class="edit-field col-span-2">
+                        <label>E-mail Institucional</label>
+                        <input type="email" id="editEmailInstitucional" placeholder="RA@al.educacao.sp.gov.br">
+                    </div>
+                </div>
+                <div class="modal-acoes">
+                    <button type="button" class="btn-modal-cancelar" onclick="fecharEditarAluno()">Cancelar</button>
+                    <button type="submit" class="btn-modal-sair azul">
+                        <i class="bi bi-check2-circle"></i> Salvar alterações
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de confirmação de saída -->
+    <div class="modal-overlay" id="modalSair" onclick="fecharModalSair(event)">
+        <div class="modal-card-sair">
+            <div class="modal-icone-sair">
+                <i class="bi bi-door-open"></i>
+            </div>
+            <h3>Sair da conta?</h3>
+            <p>Você será desconectado e redirecionado para o login.</p>
+            <div class="modal-usuario-card">
+                <i class="bi bi-person-circle"></i>
+                <div>
+                    <strong id="modalNome">—</strong>
+                    <span id="modalCargo">—</span>
+                </div>
+            </div>
+            <div class="modal-acoes">
+                <button class="btn-modal-cancelar" onclick="fecharModalSair()">Cancelar</button>
+                <button class="btn-modal-sair" onclick="confirmarSaida()">
+                    <i class="bi bi-box-arrow-right"></i> Sair da conta
+                </button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

@@ -10,10 +10,13 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300..800&family=Raleway:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/Fronted sistema/logout-modal.css">
 </head>
 <body>
+    <!-- Overlay do sidebar no mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeMobileSidebar()"></div>
+
     <aside class="sidebar" id="sidebar">
-<hr class="sidebar-divider">
 
         <div class="logo">
             <div class="logo-main" style="display: flex; align-items: center; gap: 10px;">
@@ -31,6 +34,17 @@
             <a href="/Fronted sistema/chatbot/chatbot.html"><i class="bi bi-whatsapp"></i> <span class="nav-text">WhatsApp</span></a>
         </nav>
 
+        <hr class="sidebar-divider">
+        <button class="usuario-sidebar" id="usuarioSidebar" onclick="abrirModalSair()">
+            <div class="avatar-usuario">
+                <i class="bi bi-person-circle"></i>
+            </div>
+            <div class="info-usuario nav-text">
+                <span class="nome-usuario" id="sidebarNome">—</span>
+                <span class="cargo-usuario" id="sidebarCargo"></span>
+            </div>
+            <i class="bi bi-box-arrow-right icone-sair nav-text"></i>
+        </button>
         <button class="menu-toggle" onclick="toggleSidebar()">
             <i class="bi bi-caret-left" id="menu-icon"><span class="nav-text">Minimizar</span></i>
         </button>
@@ -38,9 +52,12 @@
 
     <main class="content">
         <header>
-            <div>
-                <h1>Gerenciamento de Livros</h1>
-                <span>Cadastre e gerencie os livros da biblioteca</span>
+            <div style="display:flex; align-items:center; gap:12px;">
+                <button class="btn-mobile-menu" onclick="toggleMobileSidebar()"><i class="bi bi-list"></i></button>
+                <div>
+                    <h1>Gerenciamento de Livros</h1>
+                    <span>Cadastre e gerencie os livros da biblioteca</span>
+                </div>
             </div>
             <div class="header-actions">
                 <button id="openModalGenero" class="btn-generos">
@@ -87,18 +104,28 @@
     </div>
 </div>
 
-        <div id="deleteBookModal" class="modal-overlay-deletelivro">
-    <div class="modal-content-deletelivro">
-        <i class="bi bi-exclamation-triangle" style="color: #d9534f; font-size: 2rem;"></i>
-        <h3>Excluir Livro</h3>
-        <hr class="sidebar-divider">
-        <p>Tem certeza que deseja excluir o livro <strong id="nomeLivroExcluir"></strong>?</p>
-        <div class="modal-footer-deletelivro">
-            <button id="btnCancelarDeleteBook" onclick="closeDeleteBookModal()">Cancelar</button>
-            <button id="confirmDeleteBookBtn" class="btn-danger">Excluir</button>
+        <div id="deleteBookModal" class="modal-overlay" onclick="fecharDeleteLivro(event)">
+            <div class="modal-card-sair">
+                <div class="modal-icone-sair">
+                    <i class="bi bi-trash3"></i>
+                </div>
+                <h3>Excluir livro?</h3>
+                <p>Esta ação é permanente. O livro e todos os exemplares serão removidos.</p>
+                <div class="modal-usuario-card">
+                    <i class="bi bi-book-half" style="color:#e53e3e; font-size:2rem"></i>
+                    <div>
+                        <strong id="nomeLivroExcluir">—</strong>
+                        <span id="isbnLivroExcluirInfo">—</span>
+                    </div>
+                </div>
+                <div class="modal-acoes">
+                    <button class="btn-modal-cancelar" onclick="closeDeleteBookModal()">Cancelar</button>
+                    <button class="btn-modal-sair" id="confirmDeleteBookBtn">
+                        <i class="bi bi-trash3"></i> Excluir livro
+                    </button>
+                </div>
+            </div>
         </div>
-    </div>
-</div>
 
         <div id="area-cadastro" style="display: none;">
             <div class="card-cadastro-integrado">
@@ -159,7 +186,7 @@
         </div>
     </main>
 
-    <div class="modal-overlay" id="modalGenero" style="display: none;">
+    <div class="modal-overlay" id="modalGenero">
         <div class="modal-card">
             <div class="modal-header">
                 <div class="header-text">
@@ -212,24 +239,105 @@
 
 <div id="toast-container" class="toast-container"></div>
 
-<div id="deleteModal" class="modal-overlay-delete">
-    <div class="modal-content-delete">
-        <div class="modal-header-delete">
-        <i class="bi bi-exclamation-triangle" style="color: #d9534f; font-size: 2rem;"></i>   
-            <h3>Confirmar Exclusão</h3>
-         <hr class="sidebar-divider">   
+<div id="deleteModal" class="modal-overlay" onclick="fecharDeleteGenero(event)">
+    <div class="modal-card-sair">
+        <div class="modal-icone-sair">
+            <i class="bi bi-folder-x"></i>
         </div>
-        <div class="modal-body-delete">
-            <p>Deseja realmente excluir este gênero? Esta ação não pode ser desfeita.</p>
+        <h3>Excluir gênero?</h3>
+        <p>Só é possível excluir gêneros sem livros vinculados.</p>
+        <div class="modal-usuario-card">
+            <i class="bi bi-folder2" style="color:#e53e3e; font-size:2rem"></i>
+            <div>
+                <strong id="nomeGeneroExcluir">—</strong>
+                <span>Esta ação não pode ser desfeita.</span>
+            </div>
         </div>
-        <div class="modal-footer-delete">
-            <button class="btn-cancel-delete" onclick="closeDeleteModal()">Cancelar</button>
-            <button class="btn-confirm-delete" id="confirmDeleteBtn">Excluir</button>
+        <div class="modal-acoes">
+            <button class="btn-modal-cancelar" onclick="closeDeleteModal()">Cancelar</button>
+            <button class="btn-modal-sair" id="confirmDeleteBtn">
+                <i class="bi bi-trash3"></i> Excluir gênero
+            </button>
         </div>
     </div>
 </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="/Fronted sistema/cadastro de livro/cadastro.js"></script>
+
+    <!-- Modal editar livro -->
+    <div class="modal-overlay" id="modalEditarLivro" onclick="fecharEditarLivro(event)">
+        <div class="modal-edit-card">
+            <div class="modal-edit-header">
+                <div class="modal-edit-header-icone">
+                    <i class="bi bi-pencil-square"></i>
+                </div>
+                <div class="modal-edit-header-text">
+                    <h3>Editar Livro</h3>
+                    <span id="editIsbnLabel">—</span>
+                </div>
+                <button class="modal-edit-close" onclick="fecharEditarLivro()" type="button">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <form id="formEditarLivro">
+                <input type="hidden" id="editIsbn">
+                <div class="edit-form-grid">
+                    <div class="edit-field col-span-2">
+                        <label>Título *</label>
+                        <input type="text" id="editTitulo" required placeholder="Título do livro">
+                    </div>
+                    <div class="edit-field">
+                        <label>Autor *</label>
+                        <input type="text" id="editAutor" required placeholder="Nome do autor">
+                    </div>
+                    <div class="edit-field">
+                        <label>Edição</label>
+                        <input type="text" id="editEdicao" placeholder="1ª Edição">
+                    </div>
+                    <div class="edit-field">
+                        <label>Ano</label>
+                        <input type="number" id="editAno" min="2009" placeholder="2024">
+                    </div>
+                    <div class="edit-field">
+                        <label>Gênero</label>
+                        <select id="editGenero">
+                            <option value="">Selecione...</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-acoes">
+                    <button type="button" class="btn-modal-cancelar" onclick="fecharEditarLivro()">Cancelar</button>
+                    <button type="submit" class="btn-modal-sair azul">
+                        <i class="bi bi-check2-circle"></i> Salvar alterações
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de confirmação de saída -->
+    <div class="modal-overlay" id="modalSair" onclick="fecharModalSair(event)">
+        <div class="modal-card-sair">
+            <div class="modal-icone-sair">
+                <i class="bi bi-door-open"></i>
+            </div>
+            <h3>Sair da conta?</h3>
+            <p>Você será desconectado e redirecionado para o login.</p>
+            <div class="modal-usuario-card">
+                <i class="bi bi-person-circle"></i>
+                <div>
+                    <strong id="modalNome">—</strong>
+                    <span id="modalCargo">—</span>
+                </div>
+            </div>
+            <div class="modal-acoes">
+                <button class="btn-modal-cancelar" onclick="fecharModalSair()">Cancelar</button>
+                <button class="btn-modal-sair" onclick="confirmarSaida()">
+                    <i class="bi bi-box-arrow-right"></i> Sair da conta
+                </button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

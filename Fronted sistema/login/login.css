@@ -1,0 +1,709 @@
+/* ================================================================
+   VARIÁVEIS — mesmas do projeto
+   ================================================================ */
+:root {
+    --primary:        #1a73e8;
+    --primary-dark:   #1557b0;
+    --primary-light:  #e8f0fe;
+    --night-1:        #0d1b3e;
+    --night-2:        #152252;
+    --night-3:        #1e3a8a;
+    --gold:           #f5c518;
+    --text-dark:      #1d1d1f;
+    --text-gray:      #5f6368;
+    --border:         #e0e4e9;
+    --bg-gray:        #f0f2f5;
+    --white:          #ffffff;
+    --success:        #0ca678;
+    --danger:         #e53e3e;
+    --warning:        #f59f00;
+    --radius:         16px;
+    --radius-sm:      10px;
+    --shadow:         0 24px 64px rgba(0,0,0,0.18);
+}
+
+/* ================================================================
+   BASE
+   ================================================================ */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    min-height: 100vh;
+    font-family: "Open Sans", Arial, sans-serif;
+    color: var(--text-dark);
+    background: var(--bg-gray);
+    overflow: hidden;
+}
+
+/* ================================================================
+   LAYOUT PRINCIPAL
+   ================================================================ */
+.wrapper {
+    display: flex;
+    width: 100%;
+    height: 100vh;
+}
+
+/* ================================================================
+   PAINEL ESQUERDO — Cena da biblioteca
+   ================================================================ */
+.painel-esquerdo {
+    flex: 1;
+    background: linear-gradient(155deg, var(--night-1) 0%, var(--night-2) 45%, var(--night-3) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+/* --- Livros flutuantes (JS) --- */
+.livros-bg {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.livro-particula {
+    position: absolute;
+    border-radius: 2px 5px 5px 2px;
+    opacity: 0;
+    animation: flutuar linear infinite;
+}
+
+.livro-particula::before {
+    content: '';
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 5px;
+    background: rgba(0,0,0,0.25);
+    border-radius: 2px 0 0 2px;
+}
+
+@keyframes flutuar {
+    0%   { opacity: 0;   transform: translateY(0)       rotate(0deg);  }
+    8%   { opacity: 0.65; }
+    88%  { opacity: 0.3; }
+    100% { opacity: 0;   transform: translateY(-105vh)  rotate(18deg); }
+}
+
+/* --- Prateleira decorativa no rodapé --- */
+.prateleira {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 100px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 4px;
+    padding: 0 32px;
+    border-top: 6px solid rgba(255,255,255,0.12);
+    background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.55) 100%);
+    z-index: 2;
+}
+
+.livro-shelf {
+    width: 26px;
+    height: var(--h);
+    background: var(--cor);
+    border-radius: 2px 2px 0 0;
+    position: relative;
+    flex-shrink: 0;
+    animation: entrarLivro .7s cubic-bezier(.34,1.56,.64,1) var(--d) both;
+}
+
+.livro-shelf::before {
+    content: '';
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 5px;
+    background: rgba(0,0,0,0.22);
+    border-radius: 2px 0 0 2px;
+}
+
+.livro-shelf::after {
+    content: '';
+    position: absolute;
+    inset: 6px auto 6px auto;
+    right: 5px;
+    width: 2px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 1px;
+}
+
+@keyframes entrarLivro {
+    from { transform: translateY(100%); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+}
+
+/* --- Conteúdo central do painel esquerdo --- */
+.painel-esquerdo-conteudo {
+    position: relative;
+    z-index: 10;
+    text-align: center;
+    color: var(--white);
+    padding: 40px;
+    margin-bottom: 60px;
+}
+
+.icone-central {
+    font-size: 5.5rem;
+    color: var(--gold);
+    line-height: 1;
+    margin-bottom: 24px;
+    animation: pulsar 3.5s ease-in-out infinite;
+    display: block;
+}
+
+@keyframes pulsar {
+    0%,100% { filter: drop-shadow(0 0 18px rgba(245,197,24,.45)); transform: scale(1);    }
+    50%      { filter: drop-shadow(0 0 36px rgba(245,197,24,.85)); transform: scale(1.04); }
+}
+
+.titulo-painel {
+    font-family: "Raleway", sans-serif;
+    font-size: 2.4rem;
+    font-weight: 900;
+    line-height: 1.2;
+    margin-bottom: 12px;
+    letter-spacing: -0.5px;
+}
+
+.titulo-painel em {
+    font-style: normal;
+    color: var(--gold);
+}
+
+.subtitulo-painel {
+    font-size: 0.82rem;
+    color: rgba(255,255,255,.55);
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    font-weight: 400;
+    margin-bottom: 28px;
+}
+
+.separador {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 22px;
+}
+
+.linha-sep {
+    flex: 1;
+    height: 1px;
+    background: rgba(255,255,255,.18);
+}
+
+.estrela-sep {
+    color: var(--gold);
+    font-size: 0.55rem;
+}
+
+.citacao {
+    font-size: 0.88rem;
+    font-style: italic;
+    font-weight: 300;
+    color: rgba(255,255,255,.55);
+    line-height: 1.7;
+    border: none;
+}
+
+/* ================================================================
+   PAINEL DIREITO — Formulários
+   ================================================================ */
+.painel-direito {
+    width: 500px;
+    min-width: 460px;
+    background: var(--bg-gray);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 24px;
+}
+
+.card-acesso {
+    width: 100%;
+    max-width: 440px;
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    animation: entrarCard .55s cubic-bezier(.22,1,.36,1) forwards;
+}
+
+@keyframes entrarCard {
+    from { opacity: 0; transform: translateX(28px) scale(.98); }
+    to   { opacity: 1; transform: translateX(0)    scale(1);   }
+}
+
+/* ================================================================
+   ABAS
+   ================================================================ */
+.abas {
+    display: flex;
+    position: relative;
+    background: #f0f2f5;
+    padding: 6px;
+    gap: 4px;
+}
+
+.aba {
+    flex: 1;
+    padding: 13px 10px;
+    border: none;
+    background: transparent;
+    color: var(--text-gray);
+    font-family: "Open Sans", sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    position: relative;
+    z-index: 2;
+    transition: color .25s;
+}
+
+.aba.ativa {
+    color: var(--primary);
+}
+
+.aba-indicador {
+    position: absolute;
+    top: 6px;
+    bottom: 6px;
+    border-radius: var(--radius-sm);
+    background: var(--white);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    transition: left .3s cubic-bezier(.34,1.56,.64,1), width .3s;
+    z-index: 1;
+}
+
+/* ================================================================
+   ÁREA DOS FORMULÁRIOS
+   ================================================================ */
+.area-formularios {
+    padding: 32px 36px 28px;
+    position: relative;
+    overflow: hidden;
+}
+
+.formulario {
+    display: none;
+}
+
+.formulario.ativo {
+    display: block;
+    animation: entrarForm .38s ease forwards;
+}
+
+.formulario.saindo {
+    animation: sairForm .25s ease forwards;
+}
+
+@keyframes entrarForm {
+    from { opacity: 0; transform: translateX(18px); }
+    to   { opacity: 1; transform: translateX(0);    }
+}
+
+@keyframes sairForm {
+    from { opacity: 1; transform: translateX(0);     }
+    to   { opacity: 0; transform: translateX(-18px); }
+}
+
+/* Cabeçalho do formulário */
+.cabecalho-form {
+    margin-bottom: 26px;
+}
+
+.cabecalho-form h2 {
+    font-family: "Raleway", sans-serif;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--text-dark);
+    margin-bottom: 5px;
+}
+
+.cabecalho-form p {
+    font-size: 0.83rem;
+    color: var(--text-gray);
+}
+
+/* ================================================================
+   CAMPOS COM LABEL FLUTUANTE
+   ================================================================ */
+.campo {
+    position: relative;
+    margin-bottom: 18px;
+}
+
+/* Input e Select */
+.campo input,
+.campo select {
+    width: 100%;
+    height: 56px;
+    padding: 20px 44px 6px 42px;
+    border: 2px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 0.93rem;
+    font-family: "Open Sans", sans-serif;
+    color: var(--text-dark);
+    background: var(--white);
+    transition: border-color .22s, box-shadow .22s;
+    outline: none;
+    appearance: none;
+}
+
+/* Label flutuante — estado padrão (centralizado) */
+.campo label {
+    position: absolute;
+    left: 42px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.9rem;
+    color: var(--text-gray);
+    pointer-events: none;
+    transition: top .2s, transform .2s, font-size .2s, color .2s;
+    background: transparent;
+    white-space: nowrap;
+}
+
+/* Label flutuante — estado ativo (no topo) */
+.campo input:focus ~ label,
+.campo input:not(:placeholder-shown) ~ label,
+.campo select:focus ~ label,
+.campo select:valid ~ label {
+    top: 9px;
+    transform: none;
+    font-size: 0.7rem;
+    color: var(--primary);
+    font-weight: 700;
+    letter-spacing: 0.2px;
+}
+
+/* Foco do input/select */
+.campo input:focus,
+.campo select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(26,115,232,.12);
+}
+
+/* Ícone esquerdo do campo */
+.campo-icone {
+    position: absolute;
+    left: 13px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.05rem;
+    color: var(--text-gray);
+    pointer-events: none;
+    transition: color .22s;
+    z-index: 0;
+}
+
+/* Ícone muda de cor quando input está ativo */
+.campo input:focus ~ .campo-icone,
+.campo input:not(:placeholder-shown) ~ .campo-icone,
+.campo select:focus ~ .campo-icone,
+.campo select:valid ~ .campo-icone {
+    color: var(--primary);
+}
+
+/* Seta do select customizado */
+.seta-select {
+    position: absolute;
+    right: 13px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.75rem;
+    color: var(--text-gray);
+    pointer-events: none;
+    transition: transform .2s, color .2s;
+}
+
+.campo select:focus ~ .seta-select {
+    transform: translateY(-50%) rotate(180deg);
+    color: var(--primary);
+}
+
+/* Campo select — ajuste de padding para a seta */
+.campo-select select {
+    padding-right: 36px;
+    cursor: pointer;
+}
+
+/* Botão olho — ver/ocultar senha */
+.btn-olho {
+    position: absolute;
+    right: 11px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--text-gray);
+    cursor: pointer;
+    padding: 6px;
+    font-size: 1rem;
+    border-radius: 6px;
+    line-height: 1;
+    transition: color .2s, background .2s;
+}
+
+.btn-olho:hover {
+    color: var(--primary);
+    background: var(--primary-light);
+}
+
+/* Quando tem botão-olho, recua padding direito */
+.campo:has(.btn-olho) input {
+    padding-right: 44px;
+}
+
+/* ================================================================
+   LINHA DE OPÇÕES (Login)
+   ================================================================ */
+.linha-opcoes {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 22px;
+}
+
+.check-lembrar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 0.83rem;
+    color: var(--text-gray);
+    user-select: none;
+}
+
+.check-lembrar input[type="checkbox"] { display: none; }
+
+.check-box {
+    width: 17px;
+    height: 17px;
+    border: 2px solid var(--border);
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all .2s;
+    flex-shrink: 0;
+}
+
+.check-lembrar input:checked + .check-box {
+    background: var(--primary);
+    border-color: var(--primary);
+}
+
+.check-lembrar input:checked + .check-box::after {
+    content: '\2713';
+    color: white;
+    font-size: 11px;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.link-esqueci {
+    font-size: 0.83rem;
+    font-weight: 600;
+    color: var(--primary);
+    text-decoration: none;
+    transition: color .2s;
+}
+
+.link-esqueci:hover { color: var(--primary-dark); text-decoration: underline; }
+
+/* ================================================================
+   INDICADOR DE FORÇA DA SENHA
+   ================================================================ */
+.forca-senha {
+    display: none;
+    margin-top: -12px;
+    margin-bottom: 14px;
+    padding: 0 2px;
+}
+
+.forca-senha.visivel { display: block; }
+
+.barras-forca {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 5px;
+}
+
+.barra-forca {
+    flex: 1;
+    height: 4px;
+    border-radius: 3px;
+    background: var(--border);
+    transition: background .35s;
+}
+
+.texto-forca {
+    font-size: 0.73rem;
+    font-weight: 600;
+}
+
+/* ================================================================
+   BOTÃO PRINCIPAL
+   ================================================================ */
+.btn-principal {
+    width: 100%;
+    height: 50px;
+    padding: 0 20px;
+    background: var(--primary);
+    color: var(--white);
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 0.97rem;
+    font-weight: 700;
+    font-family: "Open Sans", sans-serif;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: background .25s, transform .18s, box-shadow .25s;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 14px;
+}
+
+.btn-principal::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,.15) 0%, transparent 60%);
+    opacity: 0;
+    transition: opacity .25s;
+}
+
+.btn-principal:hover:not(:disabled) {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(26,115,232,.38);
+}
+
+.btn-principal:hover:not(:disabled)::after { opacity: 1; }
+
+.btn-principal:active:not(:disabled) { transform: translateY(0); box-shadow: none; }
+
+.btn-principal:disabled {
+    opacity: .7;
+    cursor: not-allowed;
+}
+
+/* Ripple */
+.btn-principal .ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255,255,255,.35);
+    transform: scale(0);
+    animation: ripple .55s linear;
+    pointer-events: none;
+}
+
+@keyframes ripple {
+    to { transform: scale(4); opacity: 0; }
+}
+
+/* Ícone giratório de loading */
+@keyframes girar {
+    to { transform: rotate(360deg); }
+}
+
+.girando {
+    display: inline-block;
+    animation: girar .7s linear infinite;
+}
+
+/* ================================================================
+   ALERTA DE RESPOSTA
+   ================================================================ */
+.alerta {
+    font-size: 0.84rem;
+    border-radius: 8px;
+    padding: 0;
+    max-height: 0;
+    overflow: hidden;
+    text-align: center;
+    transition: max-height .3s, padding .3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.alerta.sucesso {
+    max-height: 50px;
+    padding: 10px 14px;
+    color: var(--success);
+    background: #e6f9f3;
+    border: 1px solid rgba(12,166,120,.25);
+}
+
+.alerta.erro {
+    max-height: 50px;
+    padding: 10px 14px;
+    color: var(--danger);
+    background: #fef0f0;
+    border: 1px solid rgba(229,62,62,.2);
+}
+
+/* Animação de erro no formulário */
+@keyframes chacoalhar {
+    0%,100% { transform: translateX(0);  }
+    20%      { transform: translateX(-7px); }
+    40%      { transform: translateX(7px);  }
+    60%      { transform: translateX(-5px); }
+    80%      { transform: translateX(5px);  }
+}
+
+.chacoalhar { animation: chacoalhar .4s ease; }
+
+/* ================================================================
+   RESPONSIVIDADE
+   ================================================================ */
+@media (max-width: 900px) {
+    body { overflow: auto; }
+
+    .wrapper { flex-direction: column; height: auto; min-height: 100vh; }
+
+    .painel-esquerdo {
+        min-height: 260px;
+        flex: none;
+        padding: 20px;
+    }
+
+    .painel-esquerdo-conteudo { margin-bottom: 40px; padding: 20px; }
+
+    .titulo-painel { font-size: 1.8rem; }
+    .icone-central { font-size: 3.8rem; margin-bottom: 16px; }
+    .citacao { display: none; }
+
+    .prateleira { height: 70px; }
+    .livro-shelf { width: 20px; }
+
+    .painel-direito {
+        width: 100%;
+        min-width: 0;
+        padding: 24px 16px 40px;
+    }
+}
+
+@media (max-width: 480px) {
+    .area-formularios { padding: 24px 20px 20px; }
+    .abas { padding: 5px; }
+    .card-acesso { border-radius: 12px; }
+}

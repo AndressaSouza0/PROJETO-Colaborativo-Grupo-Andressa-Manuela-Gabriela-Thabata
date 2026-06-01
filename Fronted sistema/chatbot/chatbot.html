@@ -13,6 +13,7 @@
 
     <!-- CSS desta página -->
     <link rel="stylesheet" href="/Fronted sistema/chatbot/chatbot.css">
+    <link rel="stylesheet" href="/Fronted sistema/logout-modal.css">
 </head>
 <body>
 
@@ -21,6 +22,9 @@
          "WhatsApp" está marcado como active (página atual).
          O ícone bi-whatsapp já vem no Bootstrap Icons.
     ====================================================== -->
+    <!-- Overlay do sidebar no mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeMobileSidebar()"></div>
+
     <aside class="sidebar" id="sidebar">
         <div class="logo">
             <div class="logo-main" style="display: flex; align-items: center; gap: 10px;">
@@ -39,6 +43,17 @@
                 <i class="bi bi-whatsapp"></i> <span class="nav-text">WhatsApp</span>
             </a>
         </nav>
+        <hr class="sidebar-divider">
+        <button class="usuario-sidebar" id="usuarioSidebar" onclick="abrirModalSair()">
+            <div class="avatar-usuario">
+                <i class="bi bi-person-circle"></i>
+            </div>
+            <div class="info-usuario nav-text">
+                <span class="nome-usuario" id="sidebarNome">—</span>
+                <span class="cargo-usuario" id="sidebarCargo"></span>
+            </div>
+            <i class="bi bi-box-arrow-right icone-sair nav-text"></i>
+        </button>
         <button class="menu-toggle" onclick="toggleSidebar()">
             <i class="bi bi-caret-left" id="menu-icon"></i>
             <span class="nav-text">Minimizar</span>
@@ -52,9 +67,12 @@
 
         <!-- CABEÇALHO DA PÁGINA -->
         <header>
-            <div>
-                <h1>Central de Mensagens</h1>
-                <span>Envie notificações pelo WhatsApp para os alunos da biblioteca.</span>
+            <div style="display:flex; align-items:center; gap:12px;">
+                <button class="btn-mobile-menu" onclick="toggleMobileSidebar()"><i class="bi bi-list"></i></button>
+                <div>
+                    <h1>Central de Mensagens</h1>
+                    <span>Envie notificações pelo WhatsApp para os alunos da biblioteca.</span>
+                </div>
             </div>
             <div class="header-actions">
                 <!-- Badge que mostra se o WhatsApp está conectado ou não.
@@ -225,8 +243,8 @@
 
             <div class="modal-config-header">
                 <div>
-                    <h2>Configurações da Evolution API</h2>
-                    <p>Preencha com os dados do servidor WhatsApp gratuito.</p>
+                    <h2>Servidor WhatsApp Local</h2>
+                    <p>Como iniciar o servidor para conectar o WhatsApp.</p>
                 </div>
                 <button class="btn-fechar-modal" onclick="fecharConfiguracoes()">
                     <i class="bi bi-x-lg"></i>
@@ -235,71 +253,47 @@
 
             <div class="modal-config-body">
 
-                <!-- Caixa de ajuda explicando como obter os dados -->
+                <!-- Instruções passo a passo -->
                 <div class="info-box">
                     <i class="bi bi-info-circle-fill"></i>
                     <div>
-                        <strong>Como conseguir esses dados gratuitamente?</strong>
+                        <strong>Como iniciar o servidor?</strong>
                         <p>
-                            Crie uma conta em <strong>railway.app</strong>, faça o deploy da
-                            <strong>Evolution API</strong> (é gratuito) e copie a URL gerada.
-                            O nome da instância e a chave você define durante a configuração.
-                            O guia oficial está em <strong>evolution-api.com</strong>.
+                            Abra a pasta <strong>servidor-whatsapp</strong> no computador
+                            e dê duplo clique em <strong>iniciar.bat</strong>.
+                            Aguarde a janela do terminal abrir e o QR Code aparecerá
+                            automaticamente nesta tela.
                         </p>
                     </div>
                 </div>
 
-                <!-- URL do servidor -->
+                <!-- Endereço do servidor (somente leitura) -->
                 <div class="form-group">
-                    <h5>URL do Servidor (Evolution API)</h5>
-                    <input
-                        type="url"
-                        id="configBaseUrl"
-                        placeholder="https://sua-api.railway.app"
-                    >
-                    <span class="helper-text">Endereço onde sua Evolution API está hospedada.</span>
-                </div>
-
-                <!-- Nome da instância -->
-                <div class="form-group">
-                    <h5>Nome da Instância</h5>
+                    <h5>Servidor rodando em</h5>
                     <input
                         type="text"
-                        id="configInstancia"
-                        placeholder="biblioteca-jorge-amado"
+                        value="http://localhost:3001"
+                        readonly
+                        style="background:#f3f4f6;color:var(--text-gray);cursor:default;"
                     >
                     <span class="helper-text">
-                        Nome que você deu para a instância na Evolution API.
-                        É como se fosse o "apelido" do seu WhatsApp no servidor.
+                        Endereço automático — não é necessário configurar nada.
                     </span>
                 </div>
 
-                <!-- Chave da API -->
-                <div class="form-group">
-                    <h5>Chave da API (apikey)</h5>
-                    <div class="input-com-olho">
-                        <input
-                            type="password"
-                            id="configApiKey"
-                            placeholder="sua-chave-secreta"
-                        >
-                        <!-- Botão de olho para mostrar/esconder a chave -->
-                        <button type="button" class="btn-olho" onclick="alternarVisibilidadeSenha()">
-                            <i class="bi bi-eye" id="iconeOlho"></i>
-                        </button>
-                    </div>
-                    <span class="helper-text">
-                        Chave de autenticação definida durante a configuração do servidor.
-                        Funciona como uma senha para proteger sua API.
-                    </span>
+                <!-- Status do servidor -->
+                <div id="statusServidorModal"
+                     style="padding:14px 16px;border-radius:10px;font-size:0.88rem;
+                            font-weight:600;text-align:center;background:#f3f4f6;color:var(--text-gray);">
+                    Clique em "Testar Conexão" para verificar o servidor.
                 </div>
 
             </div>
 
             <div class="modal-config-footer">
-                <button class="btn-cancel" onclick="fecharConfiguracoes()">Cancelar</button>
-                <button class="btn-primary" onclick="salvarConfiguracoes()">
-                    <i class="bi bi-check-lg"></i> Salvar e Conectar
+                <button class="btn-cancel" onclick="fecharConfiguracoes()">Fechar</button>
+                <button class="btn-primary" onclick="testarConexaoServidor()">
+                    <i class="bi bi-arrow-repeat"></i> Testar Conexão
                 </button>
             </div>
 
@@ -321,5 +315,29 @@
     <script src="/Fronted sistema/chatbot/conexao-api.js"></script>
     <script src="/Fronted sistema/chatbot/chatbot.js"></script>
 
+
+    <!-- Modal de confirmação de saída -->
+    <div class="modal-overlay" id="modalSair" onclick="fecharModalSair(event)">
+        <div class="modal-card-sair">
+            <div class="modal-icone-sair">
+                <i class="bi bi-door-open"></i>
+            </div>
+            <h3>Sair da conta?</h3>
+            <p>Você será desconectado e redirecionado para o login.</p>
+            <div class="modal-usuario-card">
+                <i class="bi bi-person-circle"></i>
+                <div>
+                    <strong id="modalNome">—</strong>
+                    <span id="modalCargo">—</span>
+                </div>
+            </div>
+            <div class="modal-acoes">
+                <button class="btn-modal-cancelar" onclick="fecharModalSair()">Cancelar</button>
+                <button class="btn-modal-sair" onclick="confirmarSaida()">
+                    <i class="bi bi-box-arrow-right"></i> Sair da conta
+                </button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

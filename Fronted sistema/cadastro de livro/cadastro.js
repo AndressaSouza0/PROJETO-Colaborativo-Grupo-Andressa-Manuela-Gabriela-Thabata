@@ -65,24 +65,35 @@ btnCancelar.onclick = () => {
 
 // Modal de Lista de Gêneros
 btnAbrirModalGenero.onclick = () => {
-    modalGenero.style.display = "flex";
+    modalGenero.classList.add('ativo');
+    document.body.style.overflow = 'hidden';
     renderizarListaGenerosModal();
 };
 
-const fecharModalG = () => modalGenero.style.display = "none";
+const fecharModalG = () => {
+    modalGenero.classList.remove('ativo');
+    document.body.style.overflow = '';
+};
 document.getElementById("closeModalGenero").onclick = fecharModalG;
+modalGenero.addEventListener('click', (e) => { if (e.target === modalGenero) fecharModalG(); });
 
-// NOVO: Modal de Confirmação de Exclusão
-function openDeleteModal(id) {
+async function openDeleteModal(id) {
     generoIdParaExcluir = id;
-    const modal = document.getElementById('deleteModal');
-    if (modal) modal.style.display = 'flex';
+    try {
+        const { data } = await supabaseClient.from('generos').select('nome').eq('id', id).single();
+        if (data) document.getElementById('nomeGeneroExcluir').textContent = data.nome;
+    } catch(e) {}
+    document.getElementById('deleteModal').classList.add('ativo');
+    document.body.style.overflow = 'hidden';
 }
-
 function closeDeleteModal() {
-    const modal = document.getElementById('deleteModal');
-    if (modal) modal.style.display = 'none';
+    document.getElementById('deleteModal').classList.remove('ativo');
+    document.body.style.overflow = '';
     generoIdParaExcluir = null;
+}
+function fecharDeleteGenero(event) {
+    if (event && event.target !== document.getElementById('deleteModal')) return;
+    closeDeleteModal();
 }
 
 // Evento do botão "Excluir" dentro do Modal Bonito
@@ -269,9 +280,14 @@ async function listarLivros(filtro = null) {
                     </button>
                 </td>
                 <td>
-                    <button onclick="openDeleteBookModal('${livro.isbn}', '${livro.titulo.replace(/'/g, "\\'")}')" class="btn-delete">
-                        <i class="bi bi-trash3"></i>
-                    </button>
+                    <div class="tabela-acoes">
+                        <button onclick="abrirEditarLivro('${livro.isbn}')" class="btn-edit" title="Editar livro">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button onclick="openDeleteBookModal('${livro.isbn}', '${livro.titulo.replace(/'/g, "\\'")}')" class="btn-delete" title="Excluir livro">
+                            <i class="bi bi-trash3"></i>
+                        </button>
+                    </div>
                 </td>
             `;
             bookTableBody.appendChild(tr);
@@ -418,17 +434,21 @@ if (inputIsbn) {
 // Variável global para o livro
 let isbnParaExcluir = null;
 
-// Função para ABRIR o modal de livro
 function openDeleteBookModal(isbn, titulo) {
     isbnParaExcluir = isbn;
     document.getElementById('nomeLivroExcluir').textContent = titulo;
-    document.getElementById('deleteBookModal').style.display = 'flex';
+    document.getElementById('isbnLivroExcluirInfo').textContent = 'ISBN: ' + isbn;
+    document.getElementById('deleteBookModal').classList.add('ativo');
+    document.body.style.overflow = 'hidden';
 }
-
-// Função para FECHAR o modal de livro
 function closeDeleteBookModal() {
-    document.getElementById('deleteBookModal').style.display = 'none';
+    document.getElementById('deleteBookModal').classList.remove('ativo');
+    document.body.style.overflow = '';
     isbnParaExcluir = null;
+}
+function fecharDeleteLivro(event) {
+    if (event && event.target !== document.getElementById('deleteBookModal')) return;
+    closeDeleteBookModal();
 }
 
 // Lógica de confirmação de exclusão do Livro (Protegida)
@@ -470,22 +490,124 @@ if (btnConfirmDeleteBook) {
 }
 
 function toggleSidebar() {
-    // 1. Seleciona a sidebar (ajuste o seletor se a sua tiver um ID ou classe diferente)
-    const sidebar = document.querySelector('.sidebar'); 
-    
-    // 2. Liga/Desliga a classe que encolhe a barra
-    sidebar.classList.toggle('collapsed');
-    
-    // 3. Muda o ícone de seta para a direita ou esquerda
-    const icon = document.getElementById('menu-icon');
-    if (sidebar.classList.contains('collapsed')) {
-        icon.className = 'bi bi-caret-right'; // Seta pra direita quando fechado
-    } else {
-        icon.className = 'bi bi-caret-left';  // Seta pra esquerda quando aberto
-    }
+    document.querySelector('.sidebar').classList.toggle('collapsed');
+}
+
+function toggleMobileSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    sidebar.classList.toggle('mobile-open');
+    overlay.classList.toggle('active');
+    document.body.style.overflow = sidebar.classList.contains('mobile-open') ? 'hidden' : '';
+}
+
+function closeMobileSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    sidebar.classList.remove('mobile-open');
+    overlay.classList.remove('active');
+    document.body.style.overflow = '';
 }
 
 // --- INICIALIZAÇÃO ---
 carregarGenerosNoSelect();
 listarLivros();
 atualizarBarraDeGeneros();
+
+/* ================================================================
+   USUÁRIO LOGADO — sidebar e modal de saída
+   ================================================================ */
+function carregarUsuario() {
+    document.querySelectorAll('nav a').forEach(link => {
+        const texto = link.querySelector('.nav-text');
+        if (texto) link.setAttribute('data-tip', texto.textContent.trim());
+    });
+    const admin = JSON.parse(sessionStorage.getItem('admin') || 'null');
+    if (!admin) return;
+    const primeiroNome = admin.nome ? admin.nome.split(' ')[0] : '—';
+    const elNome   = document.getElementById('sidebarNome');
+    const elCargo  = document.getElementById('sidebarCargo');
+    const elMNome  = document.getElementById('modalNome');
+    const elMCargo = document.getElementById('modalCargo');
+    if (elNome)   elNome.textContent   = primeiroNome;
+    if (elCargo)  elCargo.textContent  = admin.cargo  || '';
+    if (elMNome)  elMNome.textContent  = admin.nome   || '—';
+    if (elMCargo) elMCargo.textContent = admin.cargo  || '—';
+}
+function abrirModalSair() {
+    document.getElementById('modalSair').classList.add('ativo');
+    document.body.style.overflow = 'hidden';
+}
+function fecharModalSair(event) {
+    if (event && event.target !== document.getElementById('modalSair')) return;
+    document.getElementById('modalSair').classList.remove('ativo');
+    document.body.style.overflow = '';
+}
+function confirmarSaida() {
+    sessionStorage.removeItem('admin');
+    window.location.href = '/Fronted sistema/login/login.html';
+}
+document.addEventListener('DOMContentLoaded', carregarUsuario);
+
+/* ================================================================
+   EDITAR LIVRO
+   ================================================================ */
+async function abrirEditarLivro(isbn) {
+    try {
+        const { data, error } = await supabaseClient.from('livros').select('*').eq('isbn', isbn).single();
+        if (error || !data) { showToast('Erro ao carregar livro.', 'error'); return; }
+
+        document.getElementById('editIsbn').value = isbn;
+        document.getElementById('editIsbnLabel').textContent = 'ISBN: ' + isbn;
+        document.getElementById('editTitulo').value = data.titulo || '';
+        document.getElementById('editAutor').value  = data.autor  || '';
+        document.getElementById('editEdicao').value = data.edicao || '';
+        document.getElementById('editAno').value    = data.ano    || '';
+
+        const { data: generos } = await supabaseClient.from('generos').select('*').order('nome');
+        const sel = document.getElementById('editGenero');
+        sel.innerHTML = '<option value="">Selecione...</option>';
+        (generos || []).forEach(g => {
+            const opt = document.createElement('option');
+            opt.value = g.nome; opt.textContent = g.nome;
+            if (g.nome === data.genero) opt.selected = true;
+            sel.appendChild(opt);
+        });
+
+        document.getElementById('modalEditarLivro').classList.add('ativo');
+        document.body.style.overflow = 'hidden';
+    } catch(e) { showToast('Erro ao abrir edição.', 'error'); }
+}
+
+function fecharEditarLivro(event) {
+    if (event && event.target !== document.getElementById('modalEditarLivro')) return;
+    document.getElementById('modalEditarLivro').classList.remove('ativo');
+    document.body.style.overflow = '';
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('formEditarLivro');
+    if (!form) return;
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const isbn = document.getElementById('editIsbn').value;
+        const payload = {
+            titulo: document.getElementById('editTitulo').value.trim(),
+            autor:  document.getElementById('editAutor').value.trim(),
+            edicao: document.getElementById('editEdicao').value.trim(),
+            ano:    parseInt(document.getElementById('editAno').value) || null,
+            genero: document.getElementById('editGenero').value,
+        };
+        const btn = e.target.querySelector('button[type=submit]');
+        btn.disabled = true;
+        const { error } = await supabaseClient.from('livros').update(payload).eq('isbn', isbn);
+        btn.disabled = false;
+        if (error) { showToast('Erro ao salvar: ' + error.message, 'error'); }
+        else {
+            showToast('Livro atualizado com sucesso!');
+            fecharEditarLivro();
+            listarLivros();
+            atualizarBarraDeGeneros();
+        }
+    });
+});

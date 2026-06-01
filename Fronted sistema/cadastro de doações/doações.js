@@ -324,13 +324,61 @@ inputIsbn.addEventListener('input', (e) => {
 
 // --- SIDEBAR ---
 function toggleSidebar() {
-    const sidebar = document.querySelector('.sidebar');
-    sidebar.classList.toggle('collapsed');
-    const icon = document.getElementById('menu-icon');
-    icon.className = sidebar.classList.contains('collapsed') ? 'bi bi-caret-right' : 'bi bi-caret-left';
+    document.querySelector('.sidebar').classList.toggle('collapsed');
+}
+
+function toggleMobileSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    sidebar.classList.toggle('mobile-open');
+    overlay.classList.toggle('active');
+    document.body.style.overflow = sidebar.classList.contains('mobile-open') ? 'hidden' : '';
+}
+
+function closeMobileSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    sidebar.classList.remove('mobile-open');
+    overlay.classList.remove('active');
+    document.body.style.overflow = '';
 }
 
 // --- INICIALIZAÇÃO ---
 carregarGenerosNoSelect();
 listarDoacoes();
 atualizarBarraDeGeneros();
+
+/* ================================================================
+   USUÁRIO LOGADO — sidebar e modal de saída
+   ================================================================ */
+function carregarUsuario() {
+    document.querySelectorAll('nav a').forEach(link => {
+        const texto = link.querySelector('.nav-text');
+        if (texto) link.setAttribute('data-tip', texto.textContent.trim());
+    });
+    const admin = JSON.parse(sessionStorage.getItem('admin') || 'null');
+    if (!admin) return;
+    const primeiroNome = admin.nome ? admin.nome.split(' ')[0] : '—';
+    const elNome   = document.getElementById('sidebarNome');
+    const elCargo  = document.getElementById('sidebarCargo');
+    const elMNome  = document.getElementById('modalNome');
+    const elMCargo = document.getElementById('modalCargo');
+    if (elNome)   elNome.textContent   = primeiroNome;
+    if (elCargo)  elCargo.textContent  = admin.cargo  || '';
+    if (elMNome)  elMNome.textContent  = admin.nome   || '—';
+    if (elMCargo) elMCargo.textContent = admin.cargo  || '—';
+}
+function abrirModalSair() {
+    document.getElementById('modalSair').classList.add('ativo');
+    document.body.style.overflow = 'hidden';
+}
+function fecharModalSair(event) {
+    if (event && event.target !== document.getElementById('modalSair')) return;
+    document.getElementById('modalSair').classList.remove('ativo');
+    document.body.style.overflow = '';
+}
+function confirmarSaida() {
+    sessionStorage.removeItem('admin');
+    window.location.href = '/Fronted sistema/login/login.html';
+}
+document.addEventListener('DOMContentLoaded', carregarUsuario);

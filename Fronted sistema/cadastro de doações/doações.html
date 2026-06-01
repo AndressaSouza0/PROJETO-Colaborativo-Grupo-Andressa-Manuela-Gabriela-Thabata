@@ -9,8 +9,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300..800&family=Raleway:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/Fronted sistema/logout-modal.css">
 </head>
 <body>
+
+    <!-- Overlay do sidebar no mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeMobileSidebar()"></div>
 
     <aside class="sidebar" id="sidebar">
         <div class="logo">
@@ -28,6 +32,17 @@
             <a href="/Fronted sistema/Empréstimo/emprestimo.html"><i class="bi bi-layout-text-sidebar-reverse"></i> <span class="nav-text">Empréstimo</span></a>
             <a href="/Fronted sistema/chatbot/chatbot.html"><i class="bi bi-whatsapp"></i> <span class="nav-text">WhatsApp</span></a>
         </nav>
+        <hr class="sidebar-divider">
+        <button class="usuario-sidebar" id="usuarioSidebar" onclick="abrirModalSair()">
+            <div class="avatar-usuario">
+                <i class="bi bi-person-circle"></i>
+            </div>
+            <div class="info-usuario nav-text">
+                <span class="nome-usuario" id="sidebarNome">—</span>
+                <span class="cargo-usuario" id="sidebarCargo"></span>
+            </div>
+            <i class="bi bi-box-arrow-right icone-sair nav-text"></i>
+        </button>
         <button class="menu-toggle" onclick="toggleSidebar()">
             <i class="bi bi-caret-left" id="menu-icon"></i>
             <span class="nav-text">Minimizar</span>
@@ -38,9 +53,12 @@
 
         <!-- CABEÇALHO -->
         <header>
-            <div>
-                <h1>Doações de Livros</h1>
-                <span>Cadastre e gerencie os livros doados à biblioteca.</span>
+            <div style="display:flex; align-items:center; gap:12px;">
+                <button class="btn-mobile-menu" onclick="toggleMobileSidebar()"><i class="bi bi-list"></i></button>
+                <div>
+                    <h1>Doações de Livros</h1>
+                    <span>Cadastre e gerencie os livros doados à biblioteca.</span>
+                </div>
             </div>
             <div class="header-actions">
                 <button id="openModal" class="btn-primary">
@@ -208,5 +226,29 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="/Fronted sistema/cadastro de doações/doações.js"></script>
+
+    <!-- Modal de confirmação de saída -->
+    <div class="modal-overlay" id="modalSair" onclick="fecharModalSair(event)">
+        <div class="modal-card-sair">
+            <div class="modal-icone-sair">
+                <i class="bi bi-door-open"></i>
+            </div>
+            <h3>Sair da conta?</h3>
+            <p>Você será desconectado e redirecionado para o login.</p>
+            <div class="modal-usuario-card">
+                <i class="bi bi-person-circle"></i>
+                <div>
+                    <strong id="modalNome">—</strong>
+                    <span id="modalCargo">—</span>
+                </div>
+            </div>
+            <div class="modal-acoes">
+                <button class="btn-modal-cancelar" onclick="fecharModalSair()">Cancelar</button>
+                <button class="btn-modal-sair" onclick="confirmarSaida()">
+                    <i class="bi bi-box-arrow-right"></i> Sair da conta
+                </button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

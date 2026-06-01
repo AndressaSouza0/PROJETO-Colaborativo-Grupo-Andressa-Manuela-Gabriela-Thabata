@@ -68,6 +68,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     listarEmprestimos();
+    verificarAvisosAutomaticos();
 });
 
 function fecharCadastro() {
@@ -243,10 +244,14 @@ btnFinalizar.onclick = async () => {
 
         if (errorEx) throw errorEx;
 
-        // 3. ENVIAR CONFIRMAÇÃO PELO WHATSAPP
-        // Só envia se o aluno tiver número cadastrado e a API estiver configurada
+        // 3. ENVIAR MENSAGENS PELO WHATSAPP
         if (alunoSelecionado.telefone && typeof ChatbotAPI !== 'undefined') {
             const dataDevolucaoFormatada = dataPrevista.toLocaleDateString('pt-BR');
+
+            await ChatbotAPI.enviarBoasVindas(
+                alunoSelecionado.nome_aluno,
+                alunoSelecionado.telefone
+            );
 
             const resultado = await ChatbotAPI.enviarConfirmacaoEmprestimo(
                 alunoSelecionado.nome_aluno,
@@ -262,7 +267,6 @@ btnFinalizar.onclick = async () => {
                 showToast("Empréstimo registrado e mensagem enviada com sucesso!");
             }
         } else {
-            // Aluno sem telefone ou API não configurada — só confirma o empréstimo
             showToast("Empréstimo registrado com sucesso!");
         }
 
@@ -344,7 +348,7 @@ function renderizarTabela(emprestimos) {
                 `<button class="btn-devolvido" disabled>
                 <i class="bi bi-check-circle"></i> Devolvido
              </button>` : 
-            `<button onclick="devolverLivro('${emp.id}', '${emp.exemplares?.id}')" class="btn-return">
+            `<button onclick="abrirModalDevolucao('${emp.id}', '${emp.exemplares?.id}', '${(emp.exemplares?.livros?.titulo || '').replace(/'/g,"\\'")}', '${(emp.alunos?.nome_aluno || '').replace(/'/g,"\\'")}' )" class="btn-return">
                 <i class="bi bi-arrow-left-right"></i> Devolver
              </button>`
         }
@@ -354,36 +358,167 @@ function renderizarTabela(emprestimos) {
     });
 }
 
-async function devolverLivro(emprestimoId, exemplarId) {
-    if (!confirm("Confirmar a devolução deste exemplar?")) return;
-    
-    try {
-        const { error: err1 } = await supabaseClient
-            .from('emprestimos')
-            .update({ status: 'Devolvido' })
-            .eq('id', emprestimoId);
+let _devEmprestimoId = null, _devExemplarId = null;
 
+function abrirModalDevolucao(emprestimoId, exemplarId, titulo, nomeAluno) {
+    _devEmprestimoId = emprestimoId;
+    _devExemplarId   = exemplarId;
+    document.getElementById('devolucaoLivroTitulo').textContent = titulo  || 'Livro não identificado';
+    document.getElementById('devolucaoAlunoNome').textContent   = nomeAluno || 'Aluno não identificado';
+    document.getElementById('modalDevolucao').classList.add('ativo');
+    document.body.style.overflow = 'hidden';
+}
+
+function fecharModalDevolucao(event) {
+    if (event && event.target !== document.getElementById('modalDevolucao')) return;
+    document.getElementById('modalDevolucao').classList.remove('ativo');
+    document.body.style.overflow = '';
+}
+
+async function confirmarDevolucao() {
+    if (!_devEmprestimoId) return;
+    const btn = document.getElementById('btnConfirmarDevolucao');
+    btn.disabled = true;
+    try {
+        const { data: empDados } = await supabaseClient
+            .from('emprestimos')
+            .select('alunos(nome_aluno, telefone), exemplares(livros(titulo))')
+            .eq('id', _devEmprestimoId).maybeSingle();
+
+        const { error: err1 } = await supabaseClient
+            .from('emprestimos').update({ status: 'Devolvido' }).eq('id', _devEmprestimoId);
         if (err1) throw err1;
 
         const { error: err2 } = await supabaseClient
-            .from('exemplares')
-            .update({ status: 'Disponível' })
-            .eq('id', exemplarId);
-
+            .from('exemplares').update({ status: 'Disponível' }).eq('id', _devExemplarId);
         if (err2) throw err2;
 
+        if (empDados?.alunos?.telefone && typeof ChatbotAPI !== 'undefined') {
+            await ChatbotAPI.enviarConfirmacaoDevolucao(
+                empDados.alunos.nome_aluno, empDados.alunos.telefone,
+                empDados.exemplares?.livros?.titulo || 'livro'
+            );
+        }
+
+        document.getElementById('modalDevolucao').classList.remove('ativo');
+        document.body.style.overflow = '';
         showToast("Devolução registrada!");
         listarEmprestimos();
-
     } catch (err) {
-        console.error("Detalhes do erro:", err);
+        console.error("Erro na devolução:", err);
         showToast("Erro na devolução: " + (err.message || "Consulte o console"), "error");
+    } finally {
+        btn.disabled = false;
+        _devEmprestimoId = null; _devExemplarId = null;
     }
 }
 
-function toggleSidebar() {
-    const sidebar = document.querySelector('.sidebar'); 
-    sidebar.classList.toggle('collapsed');
-    const icon = document.getElementById('menu-icon');
-    icon.className = sidebar.classList.contains('collapsed') ? 'bi bi-caret-right' : 'bi bi-caret-left';
+async function devolverLivro(emprestimoId, exemplarId) {
 }
+
+// --- AVISOS AUTOMÁTICOS ---
+async function verificarAvisosAutomaticos() {
+    if (typeof ChatbotAPI === 'undefined') return;
+
+    const hoje = new Date().toISOString().split('T')[0];
+
+    const { data: expirando } = await supabaseClient
+        .from('emprestimos')
+        .select('id, data_prevista, alunos(nome_aluno, telefone), exemplares(livros(titulo))')
+        .eq('data_aviso_expiracao', hoje)
+        .eq('status', 'Ativo');
+
+    for (const emp of (expirando || [])) {
+        const chave = `notif_expiracao_${emp.id}`;
+        if (localStorage.getItem(chave) || !emp.alunos?.telefone) continue;
+        const dataFmt = _formatarDataAviso(emp.data_prevista);
+        const res = await ChatbotAPI.enviarLembreteDevolvucao(
+            emp.alunos.nome_aluno, emp.alunos.telefone,
+            emp.exemplares?.livros?.titulo || 'livro', dataFmt
+        );
+        if (res.sucesso) localStorage.setItem(chave, '1');
+    }
+
+    const { data: atrasados } = await supabaseClient
+        .from('emprestimos')
+        .select('id, data_prevista, alunos(nome_aluno, telefone), exemplares(livros(titulo))')
+        .eq('data_aviso_atraso', hoje)
+        .eq('status', 'Ativo');
+
+    for (const emp of (atrasados || [])) {
+        const chave = `notif_atraso_${emp.id}`;
+        if (localStorage.getItem(chave) || !emp.alunos?.telefone) continue;
+        const dias = _calcDiasAtraso(emp.data_prevista);
+        const res = await ChatbotAPI.enviarAvisoAtraso(
+            emp.alunos.nome_aluno, emp.alunos.telefone,
+            emp.exemplares?.livros?.titulo || 'livro', dias
+        );
+        if (res.sucesso) localStorage.setItem(chave, '1');
+    }
+}
+
+function _formatarDataAviso(dateStr) {
+    if (!dateStr) return '';
+    const [ano, mes, dia] = dateStr.split('-');
+    return `${dia}/${mes}/${ano}`;
+}
+
+function _calcDiasAtraso(dataPrevista) {
+    const diff = Math.floor((new Date() - new Date(dataPrevista)) / (1000 * 60 * 60 * 24));
+    return diff > 0 ? diff : 1;
+}
+
+function toggleSidebar() {
+    document.querySelector('.sidebar').classList.toggle('collapsed');
+}
+
+function toggleMobileSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    sidebar.classList.toggle('mobile-open');
+    overlay.classList.toggle('active');
+    document.body.style.overflow = sidebar.classList.contains('mobile-open') ? 'hidden' : '';
+}
+
+function closeMobileSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    sidebar.classList.remove('mobile-open');
+    overlay.classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+/* ================================================================
+   USUÁRIO LOGADO — sidebar e modal de saída
+   ================================================================ */
+function carregarUsuario() {
+    document.querySelectorAll('nav a').forEach(link => {
+        const texto = link.querySelector('.nav-text');
+        if (texto) link.setAttribute('data-tip', texto.textContent.trim());
+    });
+    const admin = JSON.parse(sessionStorage.getItem('admin') || 'null');
+    if (!admin) return;
+    const primeiroNome = admin.nome ? admin.nome.split(' ')[0] : '—';
+    const elNome   = document.getElementById('sidebarNome');
+    const elCargo  = document.getElementById('sidebarCargo');
+    const elMNome  = document.getElementById('modalNome');
+    const elMCargo = document.getElementById('modalCargo');
+    if (elNome)   elNome.textContent   = primeiroNome;
+    if (elCargo)  elCargo.textContent  = admin.cargo  || '';
+    if (elMNome)  elMNome.textContent  = admin.nome   || '—';
+    if (elMCargo) elMCargo.textContent = admin.cargo  || '—';
+}
+function abrirModalSair() {
+    document.getElementById('modalSair').classList.add('ativo');
+    document.body.style.overflow = 'hidden';
+}
+function fecharModalSair(event) {
+    if (event && event.target !== document.getElementById('modalSair')) return;
+    document.getElementById('modalSair').classList.remove('ativo');
+    document.body.style.overflow = '';
+}
+function confirmarSaida() {
+    sessionStorage.removeItem('admin');
+    window.location.href = '/Fronted sistema/login/login.html';
+}
+document.addEventListener('DOMContentLoaded', carregarUsuario);

@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biblioteca Jorge Amado – Acesso</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300&family=Raleway:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="login.css">
+</head>
+<body>
+
+<div class="wrapper">
+
+    <!-- ============================================================
+         PAINEL ESQUERDO — Cena animada da biblioteca
+    ============================================================ -->
+    <div class="painel-esquerdo">
+
+        <!-- Livros flutuantes gerados via JS -->
+        <div class="livros-bg" id="livros-bg"></div>
+
+        <!-- Prateleira decorativa no rodapé -->
+        <div class="prateleira">
+            <div class="livro-shelf" style="--cor:#e74c3c; --h:68px; --d:0s"></div>
+            <div class="livro-shelf" style="--cor:#3498db; --h:84px; --d:.08s"></div>
+            <div class="livro-shelf" style="--cor:#2ecc71; --h:56px; --d:.16s"></div>
+            <div class="livro-shelf" style="--cor:#f39c12; --h:76px; --d:.24s"></div>
+            <div class="livro-shelf" style="--cor:#9b59b6; --h:62px; --d:.32s"></div>
+            <div class="livro-shelf" style="--cor:#1abc9c; --h:80px; --d:.40s"></div>
+            <div class="livro-shelf" style="--cor:#e67e22; --h:50px; --d:.48s"></div>
+            <div class="livro-shelf" style="--cor:#c0392b; --h:70px; --d:.56s"></div>
+            <div class="livro-shelf" style="--cor:#2980b9; --h:88px; --d:.64s"></div>
+            <div class="livro-shelf" style="--cor:#27ae60; --h:60px; --d:.72s"></div>
+            <div class="livro-shelf" style="--cor:#8e44ad; --h:74px; --d:.80s"></div>
+            <div class="livro-shelf" style="--cor:#d35400; --h:52px; --d:.88s"></div>
+        </div>
+
+        <!-- Conteúdo central -->
+        <div class="painel-esquerdo-conteudo">
+            <div class="icone-central">
+                <i class="bi bi-book-half"></i>
+            </div>
+            <h1 class="titulo-painel">Biblioteca<br><em>Jorge Amado</em></h1>
+            <p class="subtitulo-painel">Sistema de Gestão Bibliotecária</p>
+            <div class="separador">
+                <span class="linha-sep"></span>
+                <i class="bi bi-star-fill estrela-sep"></i>
+                <span class="linha-sep"></span>
+            </div>
+            <blockquote class="citacao">
+                "Um livro é um sonho que você<br>segura nas mãos."
+            </blockquote>
+        </div>
+
+    </div>
+
+    <!-- ============================================================
+         PAINEL DIREITO — Formulários de acesso
+    ============================================================ -->
+    <div class="painel-direito">
+        <div class="card-acesso">
+
+            <!-- Abas -->
+            <div class="abas">
+                <button class="aba ativa" data-aba="login" onclick="mudarAba('login')">
+                    <i class="bi bi-box-arrow-in-right"></i>
+                    <span>Entrar</span>
+                </button>
+                <button class="aba" data-aba="cadastro" onclick="mudarAba('cadastro')">
+                    <i class="bi bi-person-plus"></i>
+                    <span>Cadastrar</span>
+                </button>
+                <div class="aba-indicador" id="abaIndicador"></div>
+            </div>
+
+            <div class="area-formularios">
+
+                <!-- ===== FORMULÁRIO DE LOGIN ===== -->
+                <form id="form-login" class="formulario ativo" onsubmit="fazerLogin(event)">
+                    <div class="cabecalho-form">
+                        <h2>Bem-vindo!</h2>
+                        <p>Acesse com sua conta de administrador</p>
+                    </div>
+
+                    <div class="campo">
+                        <input type="email" id="l-email" required placeholder=" " autocomplete="email">
+                        <label for="l-email">E-mail</label>
+                        <i class="bi bi-envelope campo-icone"></i>
+                    </div>
+
+                    <div class="campo">
+                        <input type="password" id="l-senha" required placeholder=" " autocomplete="current-password">
+                        <label for="l-senha">Senha</label>
+                        <i class="bi bi-lock campo-icone"></i>
+                        <button type="button" class="btn-olho" onclick="verSenha('l-senha', this)" tabindex="-1">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+
+                    <div class="linha-opcoes">
+                        <label class="check-lembrar">
+                            <input type="checkbox" id="lembrar">
+                            <span class="check-box"></span>
+                            Lembrar-me
+                        </label>
+                        <a href="#" class="link-esqueci" onclick="return esqueceuSenha()">Esqueci a senha</a>
+                    </div>
+
+                    <button type="submit" class="btn-principal" id="btn-login">
+                        <span class="btn-texto">Entrar</span>
+                        <i class="bi bi-arrow-right-circle-fill btn-icone"></i>
+                        <span class="btn-loading" style="display:none">
+                            <i class="bi bi-arrow-repeat girando"></i>
+                        </span>
+                    </button>
+
+                    <div class="alerta" id="alerta-login"></div>
+                </form>
+
+                <!-- ===== FORMULÁRIO DE CADASTRO ===== -->
+                <form id="form-cadastro" class="formulario" onsubmit="fazerCadastro(event)">
+                    <div class="cabecalho-form">
+                        <h2>Nova conta</h2>
+                        <p>Cadastre um administrador da biblioteca</p>
+                    </div>
+
+                    <div class="campo">
+                        <input type="text" id="c-nome" required placeholder=" " autocomplete="name">
+                        <label for="c-nome">Nome completo</label>
+                        <i class="bi bi-person campo-icone"></i>
+                    </div>
+
+                    <div class="campo">
+                        <input type="email" id="c-email" required placeholder=" " autocomplete="email">
+                        <label for="c-email">E-mail</label>
+                        <i class="bi bi-envelope campo-icone"></i>
+                    </div>
+
+                    <div class="campo campo-select">
+                        <select id="c-cargo" required>
+                            <option value="" disabled selected></option>
+                            <option value="administrador">Administrador</option>
+                            <option value="bibliotecario">Bibliotecário(a)</option>
+                            <option value="auxiliar">Auxiliar</option>
+                        </select>
+                        <label for="c-cargo">Cargo</label>
+                        <i class="bi bi-briefcase campo-icone"></i>
+                        <i class="bi bi-chevron-down seta-select"></i>
+                    </div>
+
+                    <div class="campo">
+                        <input type="password" id="c-senha" required placeholder=" "
+                               oninput="verificarForca(this.value)" autocomplete="new-password">
+                        <label for="c-senha">Senha</label>
+                        <i class="bi bi-shield-lock campo-icone"></i>
+                        <button type="button" class="btn-olho" onclick="verSenha('c-senha', this)" tabindex="-1">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+
+                    <div class="forca-senha" id="forca-senha">
+                        <div class="barras-forca">
+                            <div class="barra-forca" id="b1"></div>
+                            <div class="barra-forca" id="b2"></div>
+                            <div class="barra-forca" id="b3"></div>
+                            <div class="barra-forca" id="b4"></div>
+                        </div>
+                        <span class="texto-forca" id="texto-forca"></span>
+                    </div>
+
+                    <div class="campo">
+                        <input type="password" id="c-confirmar" required placeholder=" " autocomplete="new-password">
+                        <label for="c-confirmar">Confirmar senha</label>
+                        <i class="bi bi-shield-check campo-icone"></i>
+                        <button type="button" class="btn-olho" onclick="verSenha('c-confirmar', this)" tabindex="-1">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+
+                    <button type="submit" class="btn-principal" id="btn-cadastro">
+                        <span class="btn-texto">Criar conta</span>
+                        <i class="bi bi-person-check-fill btn-icone"></i>
+                        <span class="btn-loading" style="display:none">
+                            <i class="bi bi-arrow-repeat girando"></i>
+                        </span>
+                    </button>
+
+                    <div class="alerta" id="alerta-cadastro"></div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Supabase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- bcryptjs — hash e verificação de senhas no cliente -->
+<script src="https://cdn.jsdelivr.net/npm/bcryptjs@2.4.3/dist/bcrypt.min.js"></script>
+<script src="login.js"></script>
+</body>
+</html>

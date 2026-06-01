@@ -1155,3 +1155,69 @@ header h1 {
     from { transform: translateX(100%); opacity: 0; }
     to { transform: translateX(0); opacity: 1; }
 }
+
+/* =========================================================
+   RESPONSIVIDADE
+   ========================================================= */
+
+.btn-mobile-menu {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text-dark);
+    cursor: pointer;
+    padding: 6px 8px;
+    border-radius: 8px;
+    line-height: 1;
+    transition: background 0.2s;
+    flex-shrink: 0;
+}
+.btn-mobile-menu:hover { background: var(--sidebar-hover); }
+
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 999;
+    backdrop-filter: blur(2px);
+}
+.sidebar-overlay.active { display: block; }
+
+@media (max-width: 1024px) {
+    .content { padding: 24px 28px; }
+    .form-row { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 768px) {
+    body { overflow-x: hidden; }
+
+    .btn-mobile-menu { display: inline-flex; align-items: center; }
+
+    .sidebar {
+        transform: translateX(-260px);
+        transition: transform 0.3s ease, width 0.3s ease;
+    }
+    .sidebar.mobile-open {
+        transform: translateX(0);
+        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.18);
+    }
+    .sidebar.collapsed { width: 260px; transform: translateX(-260px); }
+    .sidebar.collapsed.mobile-open { transform: translateX(0); }
+    .sidebar.collapsed + .content { margin-left: 0; }
+
+    .content { margin-left: 0 !important; padding: 16px; }
+
+    header { flex-wrap: wrap; gap: 12px; }
+    .header-actions { flex-wrap: wrap; gap: 8px; }
+
+    .form-row { grid-template-columns: 1fr; }
+
+    .table-container { overflow-x: auto; }
+    .books-table { min-width: 600px; }
+
+    .card-cadastro-integrado { padding: 20px 16px; }
+
+    .toast { min-width: unset; width: calc(100vw - 40px); }
+}
