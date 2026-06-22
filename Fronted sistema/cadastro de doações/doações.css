@@ -760,4 +760,68 @@ header h1 {
     .card-cadastro-integrado { padding: 20px 16px; }
 
     .toast { min-width: unset; width: calc(100vw - 40px); }
+    .etiqueta-dupla { width: 100%; }
+    .etiqueta-campos { flex-direction: column; }
 }
+
+/* =========================================================
+   ETIQUETAS DUPLAS (TAG RFID + CÓDIGO INTERNO)
+   ========================================================= */
+.etiqueta-dupla {
+    width: calc(50% - 10px);
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 14px;
+    transition: border-color 0.2s;
+}
+.etiqueta-dupla:hover { border-color: #1a73e8; }
+
+.etiqueta-num {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #1a73e8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+}
+.etiqueta-campos { display: flex; gap: 10px; }
+.etiqueta-campo { flex: 1; }
+.etiqueta-campo label {
+    display: flex; align-items: center; gap: 4px;
+    font-size: 0.78rem; font-weight: 600; color: #475569; margin-bottom: 4px;
+}
+.etiqueta-campo input {
+    width: 100%; padding: 8px 10px;
+    border: 1px solid #cbd5e1; border-radius: 6px;
+    font-size: 0.88rem; font-family: 'Cascadia Code', 'Consolas', monospace;
+    transition: border-color 0.2s;
+}
+.etiqueta-campo input:focus {
+    outline: none; border-color: #1a73e8;
+    box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.12);
+}
+.etiqueta-campo input[readonly] {
+    background: #eef2ff; color: #1a73e8; font-weight: 600; cursor: default;
+}
+.tag-rfid-info {
+    font-size: 0.78rem; color: #64748b; margin-bottom: 8px;
+    display: flex; align-items: center; gap: 4px;
+}
+.btn-gerar-codigo {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 18px;
+    background: linear-gradient(135deg, #1a73e8, #4f9cf7);
+    color: #fff; border: none; border-radius: 8px;
+    font-size: 0.88rem; font-weight: 600; cursor: pointer; transition: all 0.2s;
+}
+.btn-gerar-codigo:hover {
+    background: linear-gradient(135deg, #1557b0, #1a73e8);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(26, 115, 232, 0.3);
+}
+
+.modo-noturno .etiqueta-dupla { background: #1e293b; border-color: #334155; }
+.modo-noturno .etiqueta-campo input { background: #0f172a; border-color: #475569; color: #e2e8f0; }
+.modo-noturno .etiqueta-campo input[readonly] { background: #1e3a5f; color: #60a5fa; }

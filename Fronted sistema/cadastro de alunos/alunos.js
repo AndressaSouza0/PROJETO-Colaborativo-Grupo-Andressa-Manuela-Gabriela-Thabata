@@ -1,6 +1,45 @@
 const SUPABASE_URL = 'https://sygtwdcdjtbslcavelqp.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN5Z3R3ZGNkanRic2xjYXZlbHFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwNzQxNTgsImV4cCI6MjA5MDY1MDE1OH0.TlvsoZkzLjKimaqvqMrekWLlWL7dvOfLtimJOTr8htU';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// --- FUNÇÃO DE NOTIFICAÇÃO (TOAST) ---
+function showToast(mensagem, tipo = 'success') {
+    let container = document.getElementById('toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        container.className = 'toast-container';
+        document.body.appendChild(container);
+    }
+    const toast = document.createElement('div');
+    toast.className = `toast ${tipo}`;
+    const icon = tipo === 'success'
+        ? '<i class="bi bi-check-circle-fill"></i>'
+        : '<i class="bi bi-x-circle-fill"></i>';
+    const titulo = tipo === 'success' ? 'Sucesso' : 'Erro';
+    toast.innerHTML = `
+        <div class="toast-icon-wrap">${icon}</div>
+        <div class="toast-body">
+            <div class="toast-title">${titulo}</div>
+            <span class="toast-message">${mensagem}</span>
+        </div>
+        <button class="toast-close"><i class="bi bi-x-lg"></i></button>
+        <div class="toast-progress"></div>
+    `;
+    container.appendChild(toast);
+    const dismiss = () => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(calc(100% + 24px))';
+        toast.style.transition = 'all 0.4s ease';
+        setTimeout(() => toast.remove(), 400);
+    };
+    const timer = setTimeout(dismiss, 4000);
+    toast.querySelector('.toast-close').addEventListener('click', () => {
+        clearTimeout(timer);
+        dismiss();
+    });
+}
+
 // Seletores
 const areaListagem = document.getElementById("area-listagem");
 const areaCadastro = document.getElementById("area-cadastro");
@@ -159,8 +198,10 @@ formAluno.onsubmit = async (e) => {
     };
 
     const { error } = await supabaseClient.from('alunos').insert([dados]);
-    if (error) alert("Erro ao cadastrar: " + error.message);
-    else {
+    if (error) {
+        showToast("Erro ao cadastrar: " + error.message, "error");
+    } else {
+        showToast("Aluno cadastrado com sucesso!");
         fecharCadastro();
         listarAlunos();
     }
@@ -184,8 +225,13 @@ function fecharDeleteAluno(event) {
 }
 
 document.getElementById('confirmDeleteBtn').onclick = async () => {
-    await supabaseClient.from('alunos').delete().eq('ra', raParaExcluir);
+    const { error } = await supabaseClient.from('alunos').delete().eq('ra', raParaExcluir);
     fecharModal();
+    if (error) {
+        showToast("Erro ao excluir aluno: " + error.message, "error");
+    } else {
+        showToast("Aluno excluído com sucesso!");
+    }
     listarAlunos();
 };
 
@@ -211,6 +257,31 @@ function closeMobileSidebar() {
 
 // Inicialização
 listarAlunos();
+
+/* ================================================================
+   BUSCA POR TEXTO — ALUNOS
+   ================================================================ */
+(function() {
+    function normalizarTexto(str) {
+        return str.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+    }
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', () => {
+            const termo = normalizarTexto(searchInput.value);
+            const linhas = studentTableBody.querySelectorAll('tr');
+            let visiveis = 0;
+            linhas.forEach(tr => {
+                const texto = normalizarTexto(tr.textContent);
+                const mostra = !termo || texto.includes(termo);
+                tr.style.display = mostra ? '' : 'none';
+                if (mostra) visiveis++;
+            });
+            noDataMessage.style.display = (visiveis === 0) ? 'block' : 'none';
+            noDataMessage.textContent = termo ? `Nenhum aluno encontrado para "${searchInput.value}"` : 'Nenhum aluno registrado';
+        });
+    }
+})();
 
 /* ================================================================
    USUÁRIO LOGADO — sidebar e modal de saída

@@ -124,7 +124,7 @@ async function listarDoacoes(filtroGenero = null) {
     const isbns = [...new Set(doacoes.map(d => d.isbn))];
     const { data: exemplares } = await supabaseClient
         .from('exemplares')
-        .select('isbn_vinculado, status, codigo_rfid')
+        .select('isbn_vinculado, status, codigo_rfid, codigo_interno')
         .in('isbn_vinculado', isbns);
 
     doacoes.forEach(doacao => {
@@ -157,12 +157,22 @@ async function listarDoacoes(filtroGenero = null) {
 }
 
 // --- BUSCA ---
+function normalizarTexto(str) {
+    return str.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+}
+
 document.getElementById('searchInput').addEventListener('input', function () {
-    const termo = this.value.toLowerCase();
-    document.querySelectorAll('#bookTableBody tr').forEach(tr => {
-        const texto = tr.textContent.toLowerCase();
-        tr.style.display = texto.includes(termo) ? '' : 'none';
+    const termo = normalizarTexto(this.value);
+    const linhas = document.querySelectorAll('#bookTableBody tr');
+    let visiveis = 0;
+    linhas.forEach(tr => {
+        const texto = normalizarTexto(tr.textContent);
+        const mostra = !termo || texto.includes(termo);
+        tr.style.display = mostra ? '' : 'none';
+        if (mostra) visiveis++;
     });
+    noDataMessage.style.display = (visiveis === 0) ? 'block' : 'none';
+    noDataMessage.textContent = termo ? `Nenhuma doação encontrada para "${this.value}"` : 'Nenhuma doação registrada.';
 });
 
 // --- SUBMIT DO FORMULÁRIO ---
@@ -170,9 +180,8 @@ formDoacao.onsubmit = async (e) => {
     e.preventDefault();
 
     const isbnLimpo = inputIsbn.value.replace(/\D/g, '');
-    const etiquetas = Array.from(document.querySelectorAll('.input-etiqueta'))
-        .map(i => i.value.trim())
-        .filter(v => v);
+    const inputsRfid = Array.from(document.querySelectorAll('.input-rfid'));
+    const inputsCodigo = Array.from(document.querySelectorAll('.input-codigo-interno'));
 
     const dadosDoacao = {
         nome_doador: document.getElementById('nome_doador').value.trim(),
@@ -185,13 +194,17 @@ formDoacao.onsubmit = async (e) => {
         quantidade:  parseInt(inputQtd.value)
     };
 
+    const exemplares = inputsCodigo.map((inputCod, i) => ({
+        isbn_vinculado: isbnLimpo,
+        status:         'Disponível',
+        codigo_rfid:    inputsRfid[i]?.value.trim() || null,
+        codigo_interno: inputCod.value.trim()
+    }));
+
     try {
-        // 1. Salva na tabela de doações (para histórico de quem doou)
         const { error: errD } = await supabaseClient.from('doacoes').insert([dadosDoacao]);
         if (errD) throw errD;
 
-        // 2. Adiciona o livro no acervo principal (tabela livros)
-        //    Usa upsert para não duplicar se o ISBN já existir
         const { error: errL } = await supabaseClient.from('livros').upsert([{
             isbn:   isbnLimpo,
             titulo: dadosDoacao.titulo,
@@ -202,18 +215,12 @@ formDoacao.onsubmit = async (e) => {
         }], { onConflict: 'isbn' });
         if (errL) throw errL;
 
-        // 3. Adiciona os exemplares físicos (para empréstimo via RFID)
-        if (etiquetas.length > 0) {
-            const exemplares = etiquetas.map(rfid => ({
-                isbn_vinculado: isbnLimpo,
-                status:         'Disponível',
-                codigo_rfid:    rfid
-            }));
+        if (exemplares.length > 0) {
             const { error: errE } = await supabaseClient.from('exemplares').insert(exemplares);
             if (errE) throw errE;
         }
 
-        showToast('Doação registrada com sucesso! 💖');
+        showToast('Doação registrada com sucesso!');
         fecharCadastro();
         listarDoacoes(filtroAtual);
         atualizarBarraDeGeneros();
@@ -229,18 +236,23 @@ function abrirModalEtiquetas(livro) {
     document.getElementById('modalTotalEtiquetas').textContent  = `Total: ${livro.exemplares.length}`;
 
     const grid = document.getElementById('modalEtiquetasGrid');
-    grid.innerHTML = livro.exemplares.map((ex, i) => `
-        <div class="tag-card">
-            <div class="tag-header">
-                <i class="bi bi-tag" style="color:#3b82f6;"></i>
-                <span class="tag-code">${ex.codigo_rfid || 'SEM RFID'}</span>
+    grid.innerHTML = livro.exemplares.map((ex, i) => {
+        const rfid = ex.codigo_rfid || '—';
+        const codInterno = ex.codigo_interno || '—';
+        return `
+            <div class="tag-card">
+                <div class="tag-header">
+                    <i class="bi bi-upc-scan" style="color:#3b82f6;"></i>
+                    <span class="tag-code">${codInterno}</span>
+                </div>
+                <div class="tag-body">
+                    <p>Exemplar #${i + 1}</p>
+                    <p class="tag-rfid-info"><i class="bi bi-broadcast"></i> RFID: ${rfid}</p>
+                    <span class="badge-disponivel">${ex.status || 'Disponível'}</span>
+                </div>
             </div>
-            <div class="tag-body">
-                <p>Exemplar #${i + 1}</p>
-                <span class="badge-disponivel">${ex.status || 'Disponível'}</span>
-            </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 
     document.getElementById('modalEtiquetas').style.display = 'flex';
 }
@@ -281,29 +293,89 @@ document.getElementById('confirmDeleteBtn').onclick = async () => {
     }
 };
 
-// --- ETIQUETAS DINÂMICAS (igual ao cadastro de livros) ---
+// --- GERAR CÓDIGO INTERNO AUTOMÁTICO ---
+async function gerarProximoCodigo() {
+    const { data } = await supabaseClient
+        .from('exemplares')
+        .select('codigo_interno')
+        .not('codigo_interno', 'is', null)
+        .like('codigo_interno', 'LIV-%')
+        .order('codigo_interno', { ascending: false })
+        .limit(1);
+
+    let proximo = 1;
+    if (data && data.length > 0) {
+        const num = parseInt(data[0].codigo_interno.replace('LIV-', ''));
+        if (!isNaN(num)) proximo = num + 1;
+    }
+    return proximo;
+}
+
+async function preencherCodigosAuto() {
+    const inputs = document.querySelectorAll('#containerEtiquetas .input-codigo-interno');
+    if (!inputs.length) return;
+
+    let proximo = await gerarProximoCodigo();
+    inputs.forEach(input => {
+        input.value = `LIV-${String(proximo).padStart(4, '0')}`;
+        proximo++;
+    });
+}
+
+// --- ETIQUETAS DINÂMICAS (Tag RFID + Código Interno) ---
 inputQtd.addEventListener('input', function () {
     const qtd = parseInt(this.value);
-    const container    = document.getElementById('containerEtiquetas');
-    const labelEt      = document.getElementById('labelEtiquetas');
-    const helperEt     = document.getElementById('helperEtiquetas');
+    const container = document.getElementById('containerEtiquetas');
+    const labelEt   = document.getElementById('labelEtiquetas');
+    const helperEt  = document.getElementById('helperEtiquetas');
 
     container.innerHTML = '';
 
     if (qtd > 0 && qtd <= 50) {
         labelEt.style.display  = 'block';
         helperEt.style.display = 'block';
+
+        const btnAutoContainer = document.createElement('div');
+        btnAutoContainer.style.cssText = 'width:100%; margin-bottom:10px; display:flex; gap:8px; align-items:center;';
+        btnAutoContainer.innerHTML = `
+            <button type="button" class="btn-gerar-codigo" onclick="preencherCodigosAuto()">
+                <i class="bi bi-lightning-charge"></i> Gerar códigos internos
+            </button>
+            <span style="font-size:0.82rem; color:#888;">Os códigos LIV-XXXX são gerados automaticamente</span>
+        `;
+        container.appendChild(btnAutoContainer);
+
         for (let i = 1; i <= qtd; i++) {
             const grupo = document.createElement('div');
-            grupo.className = 'form-group';
-            grupo.style.width = 'calc(25% - 15px)';
+            grupo.className = 'etiqueta-dupla';
             grupo.innerHTML = `
-                <h5>RFID ${i}</h5>
-                <input type="text" class="input-etiqueta" placeholder="Exemplar ${i}"
-                       maxlength="10" oninput="this.value = this.value.replace(/\\D/g, '')" required>
+                <span class="etiqueta-num">Exemplar ${i}</span>
+                <div class="etiqueta-campos">
+                    <div class="etiqueta-campo">
+                        <label><i class="bi bi-broadcast"></i> Tag RFID</label>
+                        <input
+                            type="text"
+                            class="input-rfid"
+                            placeholder="Aproxime a tag ou digite"
+                            maxlength="20"
+                            oninput="this.value = this.value.replace(/\\D/g, '')">
+                    </div>
+                    <div class="etiqueta-campo">
+                        <label><i class="bi bi-upc-scan"></i> Código Interno</label>
+                        <input
+                            type="text"
+                            class="input-codigo-interno"
+                            placeholder="LIV-0001"
+                            maxlength="10"
+                            required
+                            readonly>
+                    </div>
+                </div>
             `;
             container.appendChild(grupo);
         }
+
+        preencherCodigosAuto();
     } else {
         labelEt.style.display  = 'none';
         helperEt.style.display = 'none';

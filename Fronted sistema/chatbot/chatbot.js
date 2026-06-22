@@ -12,6 +12,7 @@ const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 // --- ESTADO ---
 let templateSelecionado = null;
 let emprestimosAluno    = [];
+let qrRefreshTimer      = null;
 
 // ================================================================
 // TEMPLATES DE MENSAGEM
@@ -87,24 +88,40 @@ async function verificarEAtualizarStatus() {
         badge.className  = 'status-badge-whatsapp status-conectado';
         texto.textContent = '● WhatsApp Conectado';
         areaQR.style.display = 'none';
+        pararRefreshQR();
     } else if (resultado.estado === 'erro') {
         badge.className  = 'status-badge-whatsapp status-erro';
         texto.textContent = '● Servidor offline';
         areaQR.style.display = 'none';
+        pararRefreshQR();
     } else {
         // Desconectado: exibe a área do QR Code
         badge.className  = 'status-badge-whatsapp status-desconectado';
         texto.textContent = '● Desconectado';
         areaQR.style.display = 'block';
-        carregarQRCode();
+        if (!qrRefreshTimer) carregarQRCode();
+    }
+}
+
+function pararRefreshQR() {
+    if (qrRefreshTimer) {
+        clearTimeout(qrRefreshTimer);
+        qrRefreshTimer = null;
     }
 }
 
 // ================================================================
-// QR CODE — carrega e exibe a imagem base64 da Evolution API
+// QR CODE — carrega e exibe a imagem base64
 // ================================================================
 async function carregarQRCode() {
+    qrRefreshTimer = null;
+
     const container = document.getElementById('qrCodeImg');
+    const areaQR    = document.getElementById('areaQRCode');
+
+    // Só executa se a área do QR ainda estiver visível
+    if (!areaQR || areaQR.style.display === 'none') return;
+
     container.innerHTML = `
         <i class="bi bi-arrow-repeat spinning" style="font-size:2rem;"></i>
         <span>Carregando QR Code...</span>
@@ -118,6 +135,8 @@ async function carregarQRCode() {
                  alt="QR Code WhatsApp"
                  style="width:220px;height:220px;border-radius:12px;border:3px solid var(--whatsapp-green);">
         `;
+        // QR do WhatsApp expira em ~60s — atualiza automaticamente a cada 45s
+        qrRefreshTimer = setTimeout(carregarQRCode, 45000);
     } else {
         container.innerHTML = `
             <i class="bi bi-exclamation-circle" style="font-size:2rem;color:var(--danger-red);"></i>
@@ -125,6 +144,8 @@ async function carregarQRCode() {
                 ${resultado.erro}
             </span>
         `;
+        // QR ainda não está pronto — tenta de novo em 5 segundos
+        qrRefreshTimer = setTimeout(carregarQRCode, 5000);
     }
 }
 

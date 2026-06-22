@@ -3,6 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1a73e8">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" type="image/svg+xml" href="/img/icon.svg">
+    <link rel="apple-touch-icon" href="/img/icon.svg">
     <title>Sistema Bibliotecário - WhatsApp</title>
 
     <!-- Fontes e ícones (mesmo padrão das outras páginas) -->
@@ -14,6 +20,9 @@
     <!-- CSS desta página -->
     <link rel="stylesheet" href="/Fronted sistema/chatbot/chatbot.css">
     <link rel="stylesheet" href="/Fronted sistema/logout-modal.css">
+    <link rel="stylesheet" href="/Fronted sistema/shared.css">
+    <link rel="stylesheet" href="/Fronted sistema/pwa.css">
+    <script>(function(){if(localStorage.getItem('tema-preferido')==='noturno')document.documentElement.classList.add('modo-noturno');var t=localStorage.getItem('tamanho-fonte');if(t==='grande')document.documentElement.classList.add('fonte-grande');else if(t==='extra')document.documentElement.classList.add('fonte-extra');})();</script>
 </head>
 <body>
 
@@ -26,6 +35,9 @@
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeMobileSidebar()"></div>
 
     <aside class="sidebar" id="sidebar">
+        <button class="sidebar-toggle-corner" onclick="toggleSidebar()" title="Minimizar menu">
+            <i class="bi bi-caret-left" id="menu-icon"></i>
+        </button>
         <div class="logo">
             <div class="logo-main" style="display: flex; align-items: center; gap: 10px;">
                 <i class="bi bi-book" style="font-size: 1.8rem; color: var(--primary-blue);"></i>
@@ -44,6 +56,18 @@
             </a>
         </nav>
         <hr class="sidebar-divider">
+        <button class="btn-tema" id="btnTema" onclick="alternarTema()" title="Alternar modo noturno">
+            <i class="bi bi-moon-fill" id="iconeTema"></i>
+            <span class="nav-text">Modo Noturno</span>
+        </button>
+        <div class="sidebar-acessib" title="Tamanho do texto">
+            <span class="acessib-label nav-text"><i class="bi bi-type"></i> Tamanho do texto</span>
+            <div class="acessib-btns">
+                <button class="btn-fonte" data-size="normal" onclick="setFonte('normal')" title="Texto normal">A</button>
+                <button class="btn-fonte" data-size="grande" onclick="setFonte('grande')" title="Texto grande">A+</button>
+                <button class="btn-fonte" data-size="extra" onclick="setFonte('extra')" title="Texto maior">A++</button>
+            </div>
+        </div>
         <button class="usuario-sidebar" id="usuarioSidebar" onclick="abrirModalSair()">
             <div class="avatar-usuario">
                 <i class="bi bi-person-circle"></i>
@@ -53,10 +77,6 @@
                 <span class="cargo-usuario" id="sidebarCargo"></span>
             </div>
             <i class="bi bi-box-arrow-right icone-sair nav-text"></i>
-        </button>
-        <button class="menu-toggle" onclick="toggleSidebar()">
-            <i class="bi bi-caret-left" id="menu-icon"></i>
-            <span class="nav-text">Minimizar</span>
         </button>
     </aside>
 
@@ -272,7 +292,7 @@
                     <h5>Servidor rodando em</h5>
                     <input
                         type="text"
-                        value="http://localhost:3001"
+                        value="http://localhost:3000"
                         readonly
                         style="background:#f3f4f6;color:var(--text-gray);cursor:default;"
                     >
@@ -339,5 +359,9 @@
             </div>
         </div>
     </div>
+    <script src="/Fronted sistema/tema.js"></script>
+    <script src="/Fronted sistema/custom-select.js"></script>
+    <script src="/Fronted sistema/acessibilidade.js"></script>
+    <script src="/Fronted sistema/pwa-register.js"></script>
 </body>
 </html>

@@ -3,20 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1a73e8">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" type="image/svg+xml" href="/img/icon.svg">
+    <link rel="apple-touch-icon" href="/img/icon.svg">
     <title>Sistema Bibliotecário - Gerenciar</title>
-    
+
     <link rel="stylesheet" href="https://use.typekit.net/piq3igt.css">
     <link rel="stylesheet" href="/Fronted sistema/cadastro de livro/cadastro.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300..800&family=Raleway:wght@100..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/Fronted sistema/logout-modal.css">
+    <link rel="stylesheet" href="/Fronted sistema/shared.css">
+    <link rel="stylesheet" href="/Fronted sistema/pwa.css">
+    <script>(function(){if(localStorage.getItem('tema-preferido')==='noturno')document.documentElement.classList.add('modo-noturno');var t=localStorage.getItem('tamanho-fonte');if(t==='grande')document.documentElement.classList.add('fonte-grande');else if(t==='extra')document.documentElement.classList.add('fonte-extra');})();</script>
 </head>
 <body>
     <!-- Overlay do sidebar no mobile -->
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeMobileSidebar()"></div>
 
     <aside class="sidebar" id="sidebar">
+        <button class="sidebar-toggle-corner" onclick="toggleSidebar()" title="Minimizar menu">
+            <i class="bi bi-caret-left" id="menu-icon"></i>
+        </button>
 
         <div class="logo">
             <div class="logo-main" style="display: flex; align-items: center; gap: 10px;">
@@ -27,7 +39,7 @@
        <hr class="sidebar-divider">
         <nav>
             <a href="/Fronted sistema/dashboard/dashboard.html"><i class="bi bi-menu-app"></i> <span class="nav-text">Dashboard</span></a>
-            <a href="/Fronted sistema/cadastro de livro/cadastro.html" class="active" style="font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif ;font-optical-sizing: auto; font-weight: 550;"><i class="bi bi-book"></i> <span class="nav-text">Livros</span></a>
+            <a href="/Fronted sistema/cadastro de livro/cadastro.html" class="active"><i class="bi bi-book"></i> <span class="nav-text">Livros</span></a>
             <a href="/Fronted sistema/cadastro de doações/doações.html"><i class="bi bi-heart"></i> <span class="nav-text">Doações</span></a>
             <a href="/Fronted sistema/cadastro de alunos/alunos.html"><i class="bi bi-person-add"></i> <span class="nav-text">Alunos</span></a>
             <a href="/Fronted sistema/Empréstimo/emprestimo.html"><i class="bi bi-layout-text-sidebar-reverse"></i> <span class="nav-text">Empréstimo</span></a>
@@ -35,6 +47,18 @@
         </nav>
 
         <hr class="sidebar-divider">
+        <button class="btn-tema" id="btnTema" onclick="alternarTema()" title="Alternar modo noturno">
+            <i class="bi bi-moon-fill" id="iconeTema"></i>
+            <span class="nav-text">Modo Noturno</span>
+        </button>
+        <div class="sidebar-acessib" title="Tamanho do texto">
+            <span class="acessib-label nav-text"><i class="bi bi-type"></i> Tamanho do texto</span>
+            <div class="acessib-btns">
+                <button class="btn-fonte" data-size="normal" onclick="setFonte('normal')" title="Texto normal">A</button>
+                <button class="btn-fonte" data-size="grande" onclick="setFonte('grande')" title="Texto grande">A+</button>
+                <button class="btn-fonte" data-size="extra" onclick="setFonte('extra')" title="Texto maior">A++</button>
+            </div>
+        </div>
         <button class="usuario-sidebar" id="usuarioSidebar" onclick="abrirModalSair()">
             <div class="avatar-usuario">
                 <i class="bi bi-person-circle"></i>
@@ -44,9 +68,6 @@
                 <span class="cargo-usuario" id="sidebarCargo"></span>
             </div>
             <i class="bi bi-box-arrow-right icone-sair nav-text"></i>
-        </button>
-        <button class="menu-toggle" onclick="toggleSidebar()">
-            <i class="bi bi-caret-left" id="menu-icon"><span class="nav-text">Minimizar</span></i>
         </button>
     </aside>
 
@@ -170,11 +191,11 @@
                     </div>
 
                     <div class="form-group" style="width: 100%; margin-top: 20px;">
-                        <h5 id="labelEtiquetas" style="display: none;">Códigos das Etiquetas * (preencha manualmente)</h5>
+                        <h5 id="labelEtiquetas" style="display: none;">Identificação dos Exemplares *</h5>
                         <div id="containerEtiquetas" class="form-row" style="display: flex; flex-wrap: wrap; gap: 15px;">
 
                         </div>
-                        <h5 id="helperEtiquetas" style="display: none; color: #666;">Aproxime o canto do livro do leitor, para inserir cada código de cada exemplar do livro</h5>
+                        <h5 id="helperEtiquetas" style="display: none; color: #666;">Clique em "Gerar códigos automáticos" ou digite manualmente. Cole a etiqueta no livro para identificá-lo.</h5>
                     </div>
 
                     <div class="form-actions">
@@ -226,7 +247,7 @@
 
         <div id="modal-content-tags">
             <p id="modalTotalEtiquetas" class="total-info">Total de etiquetas: 0</p>
-            
+
             <div id="modalEtiquetasGrid" class="tags-grid">
                 </div>
         </div>
@@ -339,5 +360,9 @@
             </div>
         </div>
     </div>
+    <script src="/Fronted sistema/tema.js"></script>
+    <script src="/Fronted sistema/custom-select.js"></script>
+    <script src="/Fronted sistema/acessibilidade.js"></script>
+    <script src="/Fronted sistema/pwa-register.js"></script>
 </body>
 </html>

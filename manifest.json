@@ -1,0 +1,47 @@
+{
+  "name": "Biblioteca Jorge Amado",
+  "short_name": "Biblioteca JA",
+  "description": "Sistema de Gestão Bibliotecária — Biblioteca Jorge Amado",
+  "start_url": "/Fronted sistema/login/login.html",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#1a73e8",
+  "theme_color": "#1a73e8",
+  "lang": "pt-BR",
+  "categories": ["education", "productivity"],
+  "icons": [
+    {
+      "src": "/img/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/img/icon-maskable.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "url": "/Fronted sistema/dashboard/dashboard.html",
+      "icons": [{ "src": "/img/icon.svg", "sizes": "any" }]
+    },
+    {
+      "name": "Cadastro de Livros",
+      "short_name": "Livros",
+      "url": "/Fronted sistema/cadastro de livro/cadastro.html",
+      "icons": [{ "src": "/img/icon.svg", "sizes": "any" }]
+    },
+    {
+      "name": "Empréstimos",
+      "short_name": "Empréstimos",
+      "url": "/Fronted sistema/Empréstimo/emprestimo.html",
+      "icons": [{ "src": "/img/icon.svg", "sizes": "any" }]
+    }
+  ]
+}

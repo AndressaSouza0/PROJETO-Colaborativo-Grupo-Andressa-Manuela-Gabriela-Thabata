@@ -36,18 +36,31 @@ function showToast(mensagem, tipo = 'success') {
     }
     const toast = document.createElement('div');
     toast.className = `toast ${tipo}`;
-    const icon = tipo === 'success' ? '✅' : '❌';
+    const icon = tipo === 'success'
+        ? '<i class="bi bi-check-circle-fill"></i>'
+        : '<i class="bi bi-x-circle-fill"></i>';
+    const titulo = tipo === 'success' ? 'Sucesso' : 'Erro';
     toast.innerHTML = `
-        <span class="toast-icon">${icon}</span>
-        <span class="toast-message">${mensagem}</span>
+        <div class="toast-icon-wrap">${icon}</div>
+        <div class="toast-body">
+            <div class="toast-title">${titulo}</div>
+            <span class="toast-message">${mensagem}</span>
+        </div>
+        <button class="toast-close"><i class="bi bi-x-lg"></i></button>
+        <div class="toast-progress"></div>
     `;
     container.appendChild(toast);
-    setTimeout(() => {
+    const dismiss = () => {
         toast.style.opacity = '0';
-        toast.style.transform = 'translateX(20px)';
-        toast.style.transition = 'all 0.5s ease';
-        setTimeout(() => toast.remove(), 500);
-    }, 4000);
+        toast.style.transform = 'translateX(calc(100% + 24px))';
+        toast.style.transition = 'all 0.4s ease';
+        setTimeout(() => toast.remove(), 400);
+    };
+    const timer = setTimeout(dismiss, 4000);
+    toast.querySelector('.toast-close').addEventListener('click', () => {
+        clearTimeout(timer);
+        dismiss();
+    });
 }
 
 // --- NAVEGAÇÃO ---
@@ -140,7 +153,7 @@ window.onclick = (event) => {
 
 async function atualizarBarraDeGeneros() {
     try {
-        const { data: generos, error: errG } = await supabaseClient.from('generos').select('*');
+        const { data: generos, error: errG } = await supabaseClient.from('generos').select('*').order('nome');
         const { data: livros, error: errL } = await supabaseClient.from('livros').select('genero');
         if (errG || errL) throw new Error("Erro ao buscar dados");
 
@@ -247,7 +260,7 @@ function formatarISBN(valor) {
 async function listarLivros(filtro = null) {
     try {
         // Simplificado para trazer os dados do livro e seus respectivos exemplares
-        let query = supabaseClient.from('livros').select('*, exemplares(status, codigo_rfid)');
+        let query = supabaseClient.from('livros').select('*, exemplares(status, codigo_rfid, codigo_interno)');
         
         if (filtro) query = query.eq('genero', filtro);
         
@@ -300,7 +313,7 @@ async function listarLivros(filtro = null) {
 
 formLivro.onsubmit = async (e) => {
     e.preventDefault();
-    const isbnLimpo = document.getElementById('isbn').value.replace(/\D/g, ''); 
+    const isbnLimpo = document.getElementById('isbn').value.replace(/\D/g, '');
     const dadosLivro = {
         isbn: isbnLimpo,
         titulo: document.getElementById('titulo').value,
@@ -309,16 +322,20 @@ formLivro.onsubmit = async (e) => {
         ano: parseInt(document.getElementById('ano').value),
         genero: selectGenero.value
     };
-    const etiquetas = Array.from(document.querySelectorAll('.input-etiqueta')).map(i => i.value);
-    
+
+    const inputsRfid = Array.from(document.querySelectorAll('.input-rfid'));
+    const inputsCodigo = Array.from(document.querySelectorAll('.input-codigo-interno'));
+
+    const exemplares = inputsCodigo.map((inputCod, i) => ({
+        isbn_vinculado: isbnLimpo,
+        status: 'Disponível',
+        codigo_rfid: inputsRfid[i]?.value.trim() || null,
+        codigo_interno: inputCod.value.trim()
+    }));
+
     try {
         const { error: errL } = await supabaseClient.from('livros').insert([dadosLivro]);
         if (errL) throw errL;
-        const exemplares = etiquetas.map(etiqueta => ({
-            isbn_vinculado: isbnLimpo,
-            status: 'Disponível',
-            codigo_rfid: etiqueta
-        }));
         if (exemplares.length > 0) {
             const { error: errE } = await supabaseClient.from('exemplares').insert(exemplares);
             if (errE) throw errE;
@@ -339,14 +356,17 @@ function abrirModalEtiquetas(livro) {
     document.getElementById("modalTotalEtiquetas").textContent = `Total: ${livro.exemplares.length}`;
     container.innerHTML = "";
     livro.exemplares.forEach((ex, i) => {
+        const rfid = ex.codigo_rfid || '—';
+        const codInterno = ex.codigo_interno || '—';
         container.innerHTML += `
             <div class="tag-card">
                 <div class="tag-header">
-                    <i class="bi bi-tag" style="color: #103fec;"></i>
-                    <span class="tag-code">${ex.codigo_rfid || 'SEM RFID'}</span>
+                    <i class="bi bi-upc-scan" style="color: #103fec;"></i>
+                    <span class="tag-code">${codInterno}</span>
                 </div>
                 <div class="tag-body">
                     <p>Exemplar #${i + 1}</p>
+                    <p class="tag-rfid-info"><i class="bi bi-broadcast"></i> RFID: ${rfid}</p>
                     <span class="badge-disponivel">${ex.status || 'Disponível'}</span>
                 </div>
             </div>
@@ -395,23 +415,48 @@ inputQuantidade.addEventListener('input', function() {
     if (qtd > 0 && qtd <= 50) {
         labelEtiquetas.style.display = 'block';
         helperEtiquetas.style.display = 'block';
+
+        const btnAutoContainer = document.createElement('div');
+        btnAutoContainer.style.cssText = 'width:100%; margin-bottom:10px; display:flex; gap:8px; align-items:center;';
+        btnAutoContainer.innerHTML = `
+            <button type="button" class="btn-gerar-codigo" onclick="preencherCodigosAuto()">
+                <i class="bi bi-lightning-charge"></i> Gerar códigos internos
+            </button>
+            <span style="font-size:0.82rem; color:#888;">Os códigos LIV-XXXX são gerados automaticamente</span>
+        `;
+        containerEtiquetas.appendChild(btnAutoContainer);
+
         for (let i = 1; i <= qtd; i++) {
             const grupo = document.createElement('div');
-            grupo.className = 'form-group';
-            grupo.style.width = 'calc(25% - 15px)';
-                // Dentro do seu loop for (onde i é o contador):
-grupo.innerHTML = `
-    <label>RFID ${i}</label>
-    <input 
-        type="text" 
-        class="input-etiqueta" 
-        placeholder="Exemplar ${i}" 
-        maxlength="10" 
-        oninput="this.value = this.value.replace(/\\D/g, '')"
-        required>
-`;
+            grupo.className = 'etiqueta-dupla';
+            grupo.innerHTML = `
+                <span class="etiqueta-num">Exemplar ${i}</span>
+                <div class="etiqueta-campos">
+                    <div class="etiqueta-campo">
+                        <label><i class="bi bi-broadcast"></i> Tag RFID</label>
+                        <input
+                            type="text"
+                            class="input-rfid"
+                            placeholder="Aproxime a tag ou digite"
+                            maxlength="20"
+                            oninput="this.value = this.value.replace(/\\D/g, '')">
+                    </div>
+                    <div class="etiqueta-campo">
+                        <label><i class="bi bi-upc-scan"></i> Código Interno</label>
+                        <input
+                            type="text"
+                            class="input-codigo-interno"
+                            placeholder="LIV-0001"
+                            maxlength="10"
+                            required
+                            readonly>
+                    </div>
+                </div>
+            `;
             containerEtiquetas.appendChild(grupo);
         }
+
+        preencherCodigosAuto();
     } else {
         labelEtiquetas.style.display = 'none';
         helperEtiquetas.style.display = 'none';
@@ -507,6 +552,58 @@ function closeMobileSidebar() {
     sidebar.classList.remove('mobile-open');
     overlay.classList.remove('active');
     document.body.style.overflow = '';
+}
+
+// --- BUSCA POR TEXTO ---
+function normalizarTexto(str) {
+    return str.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+}
+
+const searchInput = document.getElementById('searchInput');
+if (searchInput) {
+    searchInput.addEventListener('input', () => {
+        const termo = normalizarTexto(searchInput.value);
+        const linhas = bookTableBody.querySelectorAll('tr');
+        let visiveis = 0;
+        linhas.forEach(tr => {
+            const texto = normalizarTexto(tr.textContent);
+            const mostra = !termo || texto.includes(termo);
+            tr.style.display = mostra ? '' : 'none';
+            if (mostra) visiveis++;
+        });
+        noDataMessage.style.display = (visiveis === 0) ? 'block' : 'none';
+        noDataMessage.textContent = termo ? `Nenhum livro encontrado para "${searchInput.value}"` : 'Nenhum livro registrado';
+    });
+}
+
+// --- GERAR CÓDIGO INTERNO AUTOMÁTICO ---
+async function gerarProximoCodigo() {
+    const { data } = await supabaseClient
+        .from('exemplares')
+        .select('codigo_interno')
+        .not('codigo_interno', 'is', null)
+        .like('codigo_interno', 'LIV-%')
+        .order('codigo_interno', { ascending: false })
+        .limit(1);
+
+    let proximo = 1;
+    if (data && data.length > 0) {
+        const num = parseInt(data[0].codigo_interno.replace('LIV-', ''));
+        if (!isNaN(num)) proximo = num + 1;
+    }
+    return proximo;
+}
+
+async function preencherCodigosAuto() {
+    const inputs = containerEtiquetas.querySelectorAll('.input-codigo-interno');
+    if (!inputs.length) return;
+
+    let proximo = await gerarProximoCodigo();
+
+    inputs.forEach(input => {
+        input.value = `LIV-${String(proximo).padStart(4, '0')}`;
+        proximo++;
+    });
 }
 
 // --- INICIALIZAÇÃO ---

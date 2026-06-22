@@ -286,21 +286,47 @@ async function gerarRelatorio() {
         if (empSemana.length === 0) {
             semDados('Nenhum empréstimo nos últimos 7 dias.');
         } else {
-            tabela(
-                ['Aluno', 'RA', 'Série', 'Turma', 'Livro', 'Exemplares', 'Empréstimo', 'Devolução Prev.', 'Status'],
-                empSemana.slice(0, 30).map(e => [
-                    e.alunos?.nome_aluno || '—',
-                    e.alunos?.ra         || '—',
-                    e.alunos?.serie      || '—',
-                    e.alunos?.turma      || '—',
+            doc.autoTable({
+                startY: y,
+                head: [['Livro', 'Aluno', 'RA', 'Série / Turma', 'Empréstimo', 'Devolução', 'Status']],
+                body: empSemana.slice(0, 30).map(e => [
                     e.exemplares?.livros?.titulo || '—',
-                    String(livrosMap[e.exemplares?.livros?.isbn] ?? '—'),
+                    e.alunos?.nome_aluno         || '—',
+                    e.alunos?.ra                 || '—',
+                    [e.alunos?.serie, e.alunos?.turma].filter(Boolean).join(' — ') || '—',
                     new Date(e.created_at).toLocaleDateString('pt-BR'),
                     new Date(e.data_prevista).toLocaleDateString('pt-BR'),
                     statusEmprestimo(e)
                 ]),
-                VERDE, [245, 252, 249]
-            );
+                theme: 'plain',
+                headStyles: {
+                    fillColor: VERDE,
+                    textColor: [255, 255, 255],
+                    fontStyle: 'bold',
+                    fontSize: 8,
+                    cellPadding: { top: 3, bottom: 3, left: 4, right: 4 }
+                },
+                bodyStyles: {
+                    fontSize: 8,
+                    cellPadding: { top: 2.5, bottom: 2.5, left: 4, right: 4 },
+                    textColor: ESCURO
+                },
+                alternateRowStyles: { fillColor: [245, 252, 249] },
+                margin: { left: ML, right: 14 },
+                tableLineColor: [224, 228, 233],
+                tableLineWidth: 0.2,
+                columnStyles: {
+                    0: { cellWidth: 46 },
+                    1: { cellWidth: 40 },
+                    2: { cellWidth: 16 },
+                    3: { cellWidth: 22 },
+                    4: { cellWidth: 20 },
+                    5: { cellWidth: 20 },
+                    6: { cellWidth: 18 }
+                },
+                styles: { overflow: 'linebreak' }
+            });
+            y = doc.lastAutoTable.finalY + 9;
         }
 
         /* ── 8. Em atraso ── */

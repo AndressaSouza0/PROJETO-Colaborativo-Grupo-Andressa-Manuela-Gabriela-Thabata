@@ -49,7 +49,7 @@ body {
    ================================================================ */
 .painel-esquerdo {
     flex: 1;
-    background: linear-gradient(155deg, var(--night-1) 0%, var(--night-2) 45%, var(--night-3) 100%);
+    background: linear-gradient(155deg, var(--night-1) 0%, var(--night-3) 100%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -100,7 +100,6 @@ body {
     justify-content: center;
     gap: 4px;
     padding: 0 32px;
-    border-top: 6px solid rgba(255,255,255,0.12);
     background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.55) 100%);
     z-index: 2;
 }
@@ -221,8 +220,11 @@ body {
     min-width: 460px;
     background: var(--bg-gray);
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+    justify-content: safe center;
+    overflow-y: auto;
     padding: 32px 24px;
 }
 
@@ -318,6 +320,26 @@ body {
     from { opacity: 1; transform: translateX(0);     }
     to   { opacity: 0; transform: translateX(-18px); }
 }
+
+/* Formulário de cadastro tem mais campos — limita a altura e rola internamente */
+#form-cadastro {
+    max-height: 56vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 8px;
+    margin-right: -8px;
+}
+
+#form-cadastro::-webkit-scrollbar { width: 6px; }
+#form-cadastro::-webkit-scrollbar-track { background: transparent; }
+#form-cadastro::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 10px;
+}
+#form-cadastro::-webkit-scrollbar-thumb:hover { background: var(--text-gray); }
+
+html.modo-noturno #form-cadastro::-webkit-scrollbar-thumb { background: #2a3340; }
+html.modo-noturno #form-cadastro::-webkit-scrollbar-thumb:hover { background: #3a4555; }
 
 /* Cabeçalho do formulário */
 .cabecalho-form {
@@ -438,6 +460,128 @@ body {
 .campo-select select {
     padding-right: 36px;
     cursor: pointer;
+}
+
+/* ================================================================
+   SELECT CUSTOMIZADO — mesmo padrão (com scroll) das outras telas
+   O custom-select.js envolve o <select> nativo num .cs-wrapper;
+   aqui adaptamos esse wrapper ao layout de label flutuante do login.
+   ================================================================ */
+.cs-wrapper { position: relative; width: 100%; }
+
+.cs-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.cs-value {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.cs-value.cs-ph-text { color: transparent; }
+
+.cs-arrow {
+    flex-shrink: 0;
+    font-size: 0.75rem;
+    color: var(--text-gray);
+    transition: transform .2s, color .2s;
+}
+
+.cs-dropdown {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    box-shadow: 0 14px 36px rgba(0,0,0,.14);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-6px);
+    transition: opacity .18s, transform .18s, visibility .18s;
+    z-index: 50;
+    overflow: hidden;
+}
+
+.cs-wrapper.cs-open .cs-dropdown {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.cs-options {
+    max-height: 200px;
+    overflow-y: auto;
+    padding: 6px;
+}
+
+.cs-option {
+    display: flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 0 12px;
+    border-radius: 7px;
+    font-size: 0.88rem;
+    color: var(--text-dark);
+    cursor: pointer;
+    transition: background .15s, color .15s;
+}
+
+.cs-option:hover { background: var(--primary-light); color: var(--primary); }
+.cs-option.cs-sel { background: var(--primary-light); color: var(--primary); font-weight: 700; }
+.cs-option.cs-ph { display: none; }
+
+/* Faz o wrapper do select customizado se parecer com o campo do formulário */
+.campo-select .cs-wrapper { width: 100%; }
+
+.campo-select .cs-trigger {
+    height: 56px;
+    padding: 20px 44px 6px 42px;
+    border: 2px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--white);
+    font-size: 0.93rem;
+    font-family: "Open Sans", sans-serif;
+    color: var(--text-dark);
+    transition: border-color .22s, box-shadow .22s;
+}
+
+.campo-select .cs-arrow { display: none; }
+
+.campo-select .cs-wrapper.cs-open .cs-trigger {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(26,115,232,.12);
+}
+
+/* Label, ícone e seta reagem ao estado do select customizado
+   (substitui as regras baseadas em :focus/:valid do <select> nativo,
+   que ficou escondido dentro do .cs-wrapper) */
+.campo-select .cs-wrapper.cs-open ~ label,
+.campo-select .cs-wrapper:has(.cs-value:not(.cs-ph-text)) ~ label {
+    top: 9px;
+    transform: none;
+    font-size: 0.7rem;
+    color: var(--primary);
+    font-weight: 700;
+    letter-spacing: 0.2px;
+}
+
+.campo-select .cs-wrapper.cs-open ~ .campo-icone,
+.campo-select .cs-wrapper:has(.cs-value:not(.cs-ph-text)) ~ .campo-icone {
+    color: var(--primary);
+}
+
+.campo-select .cs-wrapper.cs-open ~ .seta-select {
+    color: var(--primary);
+    transform: translateY(-50%) rotate(180deg);
 }
 
 /* Botão olho — ver/ocultar senha */
@@ -671,6 +815,177 @@ body {
 }
 
 .chacoalhar { animation: chacoalhar .4s ease; }
+
+/* ================================================================
+   ACESSIBILIDADE — Tamanho do texto
+   ================================================================ */
+html.fonte-grande { font-size: 112.5%; }
+html.fonte-extra  { font-size: 125%; }
+
+/* ================================================================
+   RODAPÉ DE OPÇÕES — Tema e acessibilidade
+   ================================================================ */
+.opcoes-rodape {
+    width: 100%;
+    max-width: 440px;
+    margin-top: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+    padding: 14px 18px;
+    background: var(--white);
+    border-radius: var(--radius-sm);
+    box-shadow: 0 4px 18px rgba(0,0,0,.06);
+    transition: background .25s, box-shadow .25s;
+}
+
+.btn-tema-login {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1.5px solid var(--border);
+    background: transparent;
+    color: var(--text-gray);
+    font-family: "Open Sans", sans-serif;
+    font-size: 0.83rem;
+    font-weight: 600;
+    padding: 9px 14px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background .2s, color .2s, border-color .2s;
+}
+
+.btn-tema-login:hover {
+    background: var(--primary-light);
+    color: var(--primary);
+    border-color: var(--primary);
+}
+
+.acessib-login {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px 10px;
+}
+
+.acessib-label-login {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+    color: var(--text-gray);
+}
+
+.acessib-btns-login {
+    display: flex;
+    gap: 4px;
+}
+
+.acessib-btns-login .btn-fonte {
+    width: 1.9rem;
+    height: 1.9rem;
+    flex-shrink: 0;
+    padding: 0;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-gray);
+    cursor: pointer;
+    font-weight: 700;
+    transition: background .2s, color .2s, border-color .2s;
+}
+
+.acessib-btns-login .btn-fonte:nth-child(1) { font-size: 0.7rem; }
+.acessib-btns-login .btn-fonte:nth-child(2) { font-size: 0.85rem; }
+.acessib-btns-login .btn-fonte:nth-child(3) { font-size: 1rem; }
+
+.acessib-btns-login .btn-fonte.ativo {
+    background: var(--primary-light);
+    color: var(--primary);
+    border-color: var(--primary);
+}
+
+/* ================================================================
+   MODO NOTURNO
+   ================================================================ */
+html.modo-noturno body { background: #11151c; }
+
+html.modo-noturno .painel-direito { background: #11151c; }
+
+html.modo-noturno .card-acesso {
+    background: #1b212b;
+    box-shadow: 0 24px 64px rgba(0,0,0,.5);
+}
+
+html.modo-noturno .abas { background: #11151c; }
+
+html.modo-noturno .aba { color: #8b96a5; }
+html.modo-noturno .aba.ativa { color: var(--primary-light); }
+
+html.modo-noturno .aba-indicador {
+    background: #2a3340;
+    box-shadow: 0 2px 10px rgba(0,0,0,.35);
+}
+
+html.modo-noturno .cabecalho-form h2 { color: #f1f3f5; }
+html.modo-noturno .cabecalho-form p  { color: #8b96a5; }
+
+html.modo-noturno .campo input,
+html.modo-noturno .campo select,
+html.modo-noturno .campo-select .cs-trigger,
+html.modo-noturno .cs-dropdown {
+    background: #11151c;
+    border-color: #2a3340;
+    color: #f1f3f5;
+}
+
+html.modo-noturno .cs-arrow { color: #8b96a5; }
+html.modo-noturno .cs-option { color: #f1f3f5; }
+html.modo-noturno .cs-option:hover,
+html.modo-noturno .cs-option.cs-sel {
+    background: rgba(26,115,232,.18);
+    color: var(--primary-light);
+}
+
+html.modo-noturno .campo label,
+html.modo-noturno .campo-icone,
+html.modo-noturno .seta-select,
+html.modo-noturno .btn-olho,
+html.modo-noturno .check-lembrar,
+html.modo-noturno .texto-forca {
+    color: #8b96a5;
+}
+
+html.modo-noturno .check-box { border-color: #2a3340; }
+html.modo-noturno .barra-forca { background: #2a3340; }
+html.modo-noturno .link-esqueci { color: var(--primary-light); }
+
+html.modo-noturno .opcoes-rodape {
+    background: #1b212b;
+    box-shadow: 0 4px 18px rgba(0,0,0,.3);
+}
+
+html.modo-noturno .btn-tema-login,
+html.modo-noturno .acessib-btns-login .btn-fonte {
+    border-color: #2a3340;
+    color: #8b96a5;
+}
+
+html.modo-noturno .acessib-label-login { color: #8b96a5; }
+
+html.modo-noturno .btn-tema-login:hover {
+    background: rgba(26,115,232,.15);
+    color: var(--primary-light);
+    border-color: var(--primary);
+}
+
+html.modo-noturno .acessib-btns-login .btn-fonte.ativo {
+    background: rgba(26,115,232,.2);
+    color: var(--primary-light);
+    border-color: var(--primary);
+}
 
 /* ================================================================
    RESPONSIVIDADE

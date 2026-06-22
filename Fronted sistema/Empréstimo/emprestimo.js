@@ -30,18 +30,31 @@ function showToast(mensagem, tipo = 'success') {
     }
     const toast = document.createElement('div');
     toast.className = `toast ${tipo}`;
-    const icon = tipo === 'success' ? '✅' : '❌';
+    const icon = tipo === 'success'
+        ? '<i class="bi bi-check-circle-fill"></i>'
+        : '<i class="bi bi-x-circle-fill"></i>';
+    const titulo = tipo === 'success' ? 'Sucesso' : 'Erro';
     toast.innerHTML = `
-        <span class="toast-icon">${icon}</span>
-        <span class="toast-message">${mensagem}</span>
+        <div class="toast-icon-wrap">${icon}</div>
+        <div class="toast-body">
+            <div class="toast-title">${titulo}</div>
+            <span class="toast-message">${mensagem}</span>
+        </div>
+        <button class="toast-close"><i class="bi bi-x-lg"></i></button>
+        <div class="toast-progress"></div>
     `;
     container.appendChild(toast);
-    setTimeout(() => {
+    const dismiss = () => {
         toast.style.opacity = '0';
-        toast.style.transform = 'translateX(20px)';
-        toast.style.transition = 'all 0.5s ease';
-        setTimeout(() => toast.remove(), 500);
-    }, 4000);
+        toast.style.transform = 'translateX(calc(100% + 24px))';
+        toast.style.transition = 'all 0.4s ease';
+        setTimeout(() => toast.remove(), 400);
+    };
+    const timer = setTimeout(dismiss, 4000);
+    toast.querySelector('.toast-close').addEventListener('click', () => {
+        clearTimeout(timer);
+        dismiss();
+    });
 }
 
 // --- INICIALIZAÇÃO ---
@@ -69,6 +82,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
     listarEmprestimos();
     verificarAvisosAutomaticos();
+
+    function normalizarTexto(str) {
+        return str.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+    }
+
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', () => {
+            const termo = normalizarTexto(searchInput.value);
+            const bookTableBody = document.getElementById('bookTableBody');
+            const linhas = bookTableBody.querySelectorAll('tr');
+            let visiveis = 0;
+            linhas.forEach(tr => {
+                const texto = normalizarTexto(tr.textContent);
+                const mostra = !termo || texto.includes(termo);
+                tr.style.display = mostra ? '' : 'none';
+                if (mostra) visiveis++;
+            });
+            noDataMessage.style.display = (visiveis === 0) ? 'block' : 'none';
+            noDataMessage.textContent = termo ? `Nenhum resultado para "${searchInput.value}"` : 'Nenhum empréstimo registrado';
+        });
+    }
 });
 
 function fecharCadastro() {
@@ -88,74 +123,90 @@ function resetarFormularioEmprestimo() {
     exemplarSelecionado = null;
 }
 
-// --- BUSCA RFID (PASSO 1) ---
-rfidInput.addEventListener('keypress', async (e) => {
-    if (e.key === 'Enter') {
-        const valorBruto = rfidInput.value;
-        const tagId = valorBruto.replace(/\D/g, '');
+// --- BUSCA POR ETIQUETA (RFID ou Código Interno) ---
+async function buscarExemplarPorCodigo(codigo) {
+    loadingLivro.style.display = "flex";
+    cardLivro.style.display = "none";
 
-        if (!tagId) {
+    try {
+        const isCodigoInterno = codigo.toUpperCase().startsWith('LIV-');
+        const coluna = isCodigoInterno ? 'codigo_interno' : 'codigo_rfid';
+
+        const { data, error } = await supabaseClient
+            .from('exemplares')
+            .select(`
+                id,
+                codigo_rfid,
+                codigo_interno,
+                status,
+                livros (isbn, titulo, autor, edicao, ano)
+            `)
+            .eq(coluna, isCodigoInterno ? codigo.toUpperCase() : codigo)
+            .maybeSingle();
+
+        if (error) {
+            showToast("Erro na conexão: " + error.message, "error");
+            return;
+        }
+
+        if (!data) {
+            showToast(`Código "${codigo}" não encontrado. Use a tag RFID ou o código interno (LIV-XXXX).`, "error");
             rfidInput.value = "";
             return;
         }
 
-        loadingLivro.style.display = "flex";
-        cardLivro.style.display = "none";
-
-        try {
-            const { data, error } = await supabaseClient
-                .from('exemplares')
-                .select(`
-                    id, 
-                    codigo_rfid, 
-                    status, 
-                    livros (isbn, titulo, autor, edicao, ano)
-                `)
-                .eq('codigo_rfid', tagId)
-                .maybeSingle();
-
-            if (error) {
-                showToast("Erro na conexão: " + error.message, "error");
-                return;
-            }
-
-            if (!data) {
-                showToast(`Tag ${tagId} não encontrada.`, "error");
-                rfidInput.value = "";
-                return;
-            }
-
-            if (data.status === 'Emprestado') {
-                showToast("⚠️ Bloqueado: Este exemplar já está com outro aluno!", "error");
-                rfidInput.value = "";
-                return;
-            }
-
-            exemplarSelecionado = data;
-            livroSelecionado = data.livros;
-
-            if(document.getElementById('resEtiqueta')) document.getElementById('resEtiqueta').innerText = data.codigo_rfid;
-            
-            if(livroSelecionado) {
-                if(document.getElementById('resTitulo')) document.getElementById('resTitulo').innerText = livroSelecionado.titulo || '-';
-                if(document.getElementById('resAutor')) document.getElementById('resAutor').innerText = livroSelecionado.autor || '-';
-                if(document.getElementById('resIsbn')) document.getElementById('resIsbn').innerText = livroSelecionado.isbn || '-';
-                if(document.getElementById('resEdicao')) document.getElementById('resEdicao').innerText = livroSelecionado.edicao || '-';
-                if(document.getElementById('resAno')) document.getElementById('resAno').innerText = livroSelecionado.ano || '-';
-            }
-
-            cardLivro.style.display = "block";
-            if (stepAluno) stepAluno.classList.remove("disabled");
-            raInputEmprestimo.focus();
-
-        } catch (err) {
-            console.error("Erro inesperado:", err);
-        } finally {
-            loadingLivro.style.display = "none";
-            rfidInput.value = tagId; 
+        if (data.status === 'Emprestado') {
+            showToast("Bloqueado: Este exemplar já está com outro aluno!", "error");
+            rfidInput.value = "";
+            return;
         }
+
+        exemplarSelecionado = data;
+        livroSelecionado = data.livros;
+
+        const etiquetaTexto = data.codigo_interno
+            ? `${data.codigo_interno}${data.codigo_rfid ? ' (RFID: ' + data.codigo_rfid + ')' : ''}`
+            : data.codigo_rfid || '-';
+        if(document.getElementById('resEtiqueta')) document.getElementById('resEtiqueta').innerText = etiquetaTexto;
+
+        if(livroSelecionado) {
+            if(document.getElementById('resTitulo')) document.getElementById('resTitulo').innerText = livroSelecionado.titulo || '-';
+            if(document.getElementById('resAutor')) document.getElementById('resAutor').innerText = livroSelecionado.autor || '-';
+            if(document.getElementById('resIsbn')) document.getElementById('resIsbn').innerText = livroSelecionado.isbn || '-';
+            if(document.getElementById('resEdicao')) document.getElementById('resEdicao').innerText = livroSelecionado.edicao || '-';
+            if(document.getElementById('resAno')) document.getElementById('resAno').innerText = livroSelecionado.ano || '-';
+        }
+
+        cardLivro.style.display = "block";
+        if (stepAluno) stepAluno.classList.remove("disabled");
+        raInputEmprestimo.focus();
+
+    } catch (err) {
+        console.error("Erro inesperado:", err);
+    } finally {
+        loadingLivro.style.display = "none";
+    }
+}
+
+rfidInput.addEventListener('keypress', async (e) => {
+    if (e.key === 'Enter') {
+        const codigo = rfidInput.value.trim();
+        if (!codigo) return;
+        await buscarExemplarPorCodigo(codigo);
     }
 });
+
+const btnLerTag = document.getElementById('btnLerTag');
+if (btnLerTag) {
+    btnLerTag.addEventListener('click', async () => {
+        const codigo = rfidInput.value.trim();
+        if (!codigo) {
+            showToast("Digite o código da etiqueta (ex: LIV-0001).", "error");
+            return;
+        }
+        await buscarExemplarPorCodigo(codigo);
+    });
+}
 
 // --- BUSCA ALUNO (PASSO 2) ---
 document.getElementById('btnBuscarAluno').onclick = async () => {
@@ -286,7 +337,7 @@ async function listarEmprestimos() {
         .select(`
             id, created_at, data_prevista, status,
             alunos (nome_aluno),
-            exemplares (id, codigo_rfid, livros (titulo))
+            exemplares (id, codigo_rfid, codigo_interno, livros (titulo))
         `)
         .order('created_at', { ascending: false });
 
@@ -312,6 +363,7 @@ async function listarEmprestimos() {
     document.getElementById('count-todos').innerText = `(${listaProcessada.length})`;
     document.getElementById('count-em-dia').innerText = `(${listaProcessada.filter(e => e.statusExibicao === 'Ativo').length})`;
     document.getElementById('count-atrasados').innerText = `(${listaProcessada.filter(e => e.statusExibicao === 'Atrasado').length})`;
+    document.getElementById('count-devolvidos').innerText = `(${listaProcessada.filter(e => e.statusExibicao === 'Devolvido').length})`;
 
     let listaFiltrada = listaProcessada;
     if (filtroAtual !== 'todos') {
@@ -339,7 +391,7 @@ function renderizarTabela(emprestimos) {
         tr.innerHTML = `
             <td>${emp.alunos?.nome_aluno || 'N/A'}</td>
             <td>${emp.exemplares?.livros?.titulo || 'N/A'}</td>
-            <td>${emp.exemplares?.codigo_rfid || 'N/A'}</td>
+            <td>${emp.exemplares?.codigo_interno || emp.exemplares?.codigo_rfid || 'N/A'}</td>
             <td>${new Date(emp.created_at).toLocaleDateString('pt-BR')}</td>
             <td>${new Date(emp.data_prevista).toLocaleDateString('pt-BR')}</td>
             <td><span class="status-badge ${status}">${status}</span></td>

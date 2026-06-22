@@ -3,21 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1a73e8">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" type="image/svg+xml" href="/img/icon.svg">
+    <link rel="apple-touch-icon" href="/img/icon.svg">
     <title>Sistema Bibliotecário - Gerenciar</title>
-    
+
     <link rel="stylesheet" href="https://use.typekit.net/piq3igt.css">
     <link rel="stylesheet" href="/Fronted sistema/Empréstimo/emprestimo.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300..800&family=Raleway:wght@100..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/Fronted sistema/logout-modal.css">
+    <link rel="stylesheet" href="/Fronted sistema/shared.css">
+    <link rel="stylesheet" href="/Fronted sistema/pwa.css">
+    <script>(function(){if(localStorage.getItem('tema-preferido')==='noturno')document.documentElement.classList.add('modo-noturno');var t=localStorage.getItem('tamanho-fonte');if(t==='grande')document.documentElement.classList.add('fonte-grande');else if(t==='extra')document.documentElement.classList.add('fonte-extra');})();</script>
 </head>
 <body>
         <!-- Overlay do sidebar no mobile -->
         <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeMobileSidebar()"></div>
 
         <aside class="sidebar" id="sidebar">
-    <div class="logo">
+        <button class="sidebar-toggle-corner" onclick="toggleSidebar()" title="Minimizar menu">
+            <i class="bi bi-caret-left" id="menu-icon"></i>
+        </button>
+    <div class="logo"> 
         <div class="logo-main" style="display: flex; align-items: center; gap: 10px;">
             <i class="bi bi-book" style="font-size: 1.8rem; color: var(--primary-blue);"></i>
             <h2>Biblioteca Jorge Amado</h2>
@@ -29,10 +41,22 @@
         <a href="/Fronted sistema/cadastro de livro/cadastro.html"><i class="bi bi-book"></i> <span class="nav-text">Livros</span></a>
         <a href="/Fronted sistema/cadastro de doações/doações.html"><i class="bi bi-heart"></i> <span class="nav-text">Doações</span></a>
         <a href="/Fronted sistema/cadastro de alunos/alunos.html"><i class="bi bi-person-add"></i> <span class="nav-text">Alunos</span></a>
-        <a href="/Fronted sistema/Empréstimo/emprestimo.html" class="active" style="font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif ;font-optical-sizing: auto; font-weight: 550;"><i class="bi bi-layout-text-sidebar-reverse"></i> <span class="nav-text">Empréstimo</span></a>
+        <a href="/Fronted sistema/Empréstimo/emprestimo.html" class="active"><i class="bi bi-layout-text-sidebar-reverse"></i> <span class="nav-text">Empréstimo</span></a>
         <a href="/Fronted sistema/chatbot/chatbot.html"><i class="bi bi-whatsapp"></i> <span class="nav-text">WhatsApp</span></a>
     </nav>
         <hr class="sidebar-divider">
+        <button class="btn-tema" id="btnTema" onclick="alternarTema()" title="Alternar modo noturno">
+            <i class="bi bi-moon-fill" id="iconeTema"></i>
+            <span class="nav-text">Modo Noturno</span>
+        </button>
+        <div class="sidebar-acessib" title="Tamanho do texto">
+            <span class="acessib-label nav-text"><i class="bi bi-type"></i> Tamanho do texto</span>
+            <div class="acessib-btns">
+                <button class="btn-fonte" data-size="normal" onclick="setFonte('normal')" title="Texto normal">A</button>
+                <button class="btn-fonte" data-size="grande" onclick="setFonte('grande')" title="Texto grande">A+</button>
+                <button class="btn-fonte" data-size="extra" onclick="setFonte('extra')" title="Texto maior">A++</button>
+            </div>
+        </div>
         <button class="usuario-sidebar" id="usuarioSidebar" onclick="abrirModalSair()">
             <div class="avatar-usuario">
                 <i class="bi bi-person-circle"></i>
@@ -42,9 +66,6 @@
                 <span class="cargo-usuario" id="sidebarCargo"></span>
             </div>
             <i class="bi bi-box-arrow-right icone-sair nav-text"></i>
-        </button>
-    <button class="menu-toggle" onclick="toggleSidebar()">
-            <i class="bi bi-caret-left" id="menu-icon"><span class="nav-text">Minimizar</span></i>
         </button>
 </aside>
 
@@ -77,6 +98,7 @@
                 <button class="tab-item active" data-filter="todos">Todos <span id="count-todos">(0)</span></button>
                 <button class="tab-item" data-filter="Ativo">Em Dia <span id="count-em-dia">(0)</span></button>
                 <button class="tab-item" data-filter="Atrasado">Atrasados <span id="count-atrasados">(0)</span></button>
+                <button class="tab-item" data-filter="Devolvido">Devolvidos <span id="count-devolvidos">(0)</span></button>
             </div>
         </div>
         
@@ -109,11 +131,11 @@
 
                 <form id="formCadastroEmprestimo">
                     <div class="step-container">
-                        <label class="step-title">1. Leitura da Etiqueta do Livro</label>
+                        <label class="step-title">1. Identificar o Livro</label>
                         <div class="input-with-button">
-                            <input type="text" id="rfidInput" placeholder="Aguardando leitura da tag..." autofocus>
+                            <input type="text" id="rfidInput" placeholder="Tag RFID ou código interno (ex: LIV-0001)" autofocus>
                             <button type="button" class="btn-scan" id="btnLerTag">
-                                <i class="bi bi-qr-code-scan"></i> Ler Tag
+                                <i class="bi bi-search"></i> Buscar
                             </button>
                         </div>
 
@@ -121,7 +143,7 @@
 
                         <div class="spinner"></div>
 
-                        <span>Processando leitura RFID...</span>
+                        <span>Buscando exemplar...</span>
 
                     </div>
                        
@@ -324,5 +346,8 @@
             </div>
         </div>
     </div>
+    <script src="/Fronted sistema/tema.js"></script>
+    <script src="/Fronted sistema/acessibilidade.js"></script>
+    <script src="/Fronted sistema/pwa-register.js"></script>
 </body>
 </html>

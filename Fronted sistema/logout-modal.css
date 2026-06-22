@@ -28,7 +28,7 @@
 
 /* Links da nav: gap e padding transitam suavemente */
 nav a {
-    transition: background 0.2s, color 0.2s, gap 0.32s ease, padding 0.32s ease !important;
+    transition: background 0.18s, color 0.18s, gap 0.32s ease, padding 0.32s ease, transform 0.13s ease;
 }
 .sidebar.collapsed nav a {
     gap: 0 !important;
