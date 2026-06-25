@@ -19,7 +19,9 @@
  * ================================================================
  */
 
-const LOCAL_SERVER = 'http://localhost:3000';
+const LOCAL_SERVER = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+    ? ''
+    : 'http://127.0.0.1:3000';
 
 // Mantido por compatibilidade — não é mais necessário configurar
 function carregarConfigAPI() {
@@ -179,6 +181,7 @@ async function enviarConfirmacaoDevolucao(nomeAluno, numero, tituloLivro) {
 // EXPORTAR PARA USO GLOBAL
 // ---------------------------------------------------------------
 window.ChatbotAPI = {
+    baseUrl: LOCAL_SERVER,
     carregarConfigAPI,
     salvarConfigAPI,
     apiEstaConfigurada,

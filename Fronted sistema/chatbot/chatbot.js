@@ -75,9 +75,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 // STATUS DA CONEXÃO — badge no cabeçalho + área do QR Code
 // ================================================================
 async function verificarEAtualizarStatus() {
-    const badge  = document.getElementById('statusConexao');
-    const texto  = document.getElementById('statusTexto');
-    const areaQR = document.getElementById('areaQRCode');
+    const badge      = document.getElementById('statusConexao');
+    const texto      = document.getElementById('statusTexto');
+    const areaQR     = document.getElementById('areaQRCode');
+    const btnIniciar = document.getElementById('btnIniciarServidor');
 
     badge.className  = 'status-badge-whatsapp status-verificando';
     texto.textContent = '● Verificando...';
@@ -88,17 +89,19 @@ async function verificarEAtualizarStatus() {
         badge.className  = 'status-badge-whatsapp status-conectado';
         texto.textContent = '● WhatsApp Conectado';
         areaQR.style.display = 'none';
+        btnIniciar.style.display = 'none';
         pararRefreshQR();
     } else if (resultado.estado === 'erro') {
         badge.className  = 'status-badge-whatsapp status-erro';
         texto.textContent = '● Servidor offline';
         areaQR.style.display = 'none';
+        btnIniciar.style.display = '';
         pararRefreshQR();
     } else {
-        // Desconectado: exibe a área do QR Code
         badge.className  = 'status-badge-whatsapp status-desconectado';
         texto.textContent = '● Desconectado';
         areaQR.style.display = 'block';
+        btnIniciar.style.display = 'none';
         if (!qrRefreshTimer) carregarQRCode();
     }
 }
@@ -485,7 +488,7 @@ async function handleEnviarMensagem(e) {
     btnEnv.innerHTML = '<i class="bi bi-hourglass-split spinning"></i> Enviando...';
 
     try {
-        const resposta = await fetch('http://localhost:3000/enviar-notificacao', {
+        const resposta = await fetch(`${ChatbotAPI.baseUrl}/enviar-notificacao`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ telefone, mensagem, nomeAluno, tipo: templateSelecionado })
@@ -535,7 +538,7 @@ async function carregarHistorico() {
     let historico = [];
 
     try {
-        const resp = await fetch('http://localhost:3000/api/historico');
+        const resp = await fetch(`${ChatbotAPI.baseUrl}/api/historico`);
         if (resp.ok) historico = await resp.json();
     } catch {
         // servidor offline: usa localStorage como fallback
@@ -578,6 +581,53 @@ function mudarAba(btn) {
     if (aba) aba.style.display = 'block';
 
     if (tabId === 'historico') carregarHistorico().catch(() => {});
+}
+
+// ================================================================
+// INICIAR SERVIDOR VIA PROTOCOLO CUSTOMIZADO
+// ================================================================
+function iniciarServidor() {
+    document.getElementById('modalIniciarServidor').classList.add('ativo');
+    document.body.style.overflow = 'hidden';
+}
+
+function fecharModalServidor(event) {
+    if (event && event.target !== document.getElementById('modalIniciarServidor')) return;
+    document.getElementById('modalIniciarServidor').classList.remove('ativo');
+    document.body.style.overflow = '';
+}
+
+function confirmarIniciarServidor() {
+    const btnConfirmar = document.getElementById('btnConfirmarIniciar');
+    btnConfirmar.disabled = true;
+    btnConfirmar.innerHTML = '<i class="bi bi-hourglass-split spinning"></i> Iniciando...';
+
+    window.location.href = 'biblioteca-server://start';
+
+    const CHATBOT_URL = 'http://localhost:3000/Fronted%20sistema/chatbot/chatbot.html';
+    let tentativas = 0;
+
+    const poll = setInterval(() => {
+        tentativas++;
+        const img = new Image();
+        img.onload = () => {
+            clearInterval(poll);
+            window.location.href = CHATBOT_URL;
+        };
+        img.onerror = () => {
+            if (tentativas >= 10) {
+                clearInterval(poll);
+                btnConfirmar.disabled = false;
+                btnConfirmar.innerHTML = '<i class="bi bi-play-fill"></i> Iniciar';
+                fecharModalServidor();
+                mostrarToast(
+                    'Servidor não respondeu. Execute "iniciar.bat" na pasta servidor-whatsapp uma primeira vez para registrar.',
+                    'erro'
+                );
+            }
+        };
+        img.src = 'http://localhost:3000/img/icon.svg?' + Date.now();
+    }, 3000);
 }
 
 // ================================================================

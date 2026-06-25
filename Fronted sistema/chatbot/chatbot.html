@@ -95,12 +95,12 @@
                 </div>
             </div>
             <div class="header-actions">
-                <!-- Badge que mostra se o WhatsApp está conectado ou não.
-                     O chatbot.js atualiza esse badge a cada 30 segundos. -->
                 <div id="statusConexao" class="status-badge-whatsapp status-verificando">
                     <span id="statusTexto">● Verificando...</span>
                 </div>
-                <!-- Abre o modal de configurações da Evolution API -->
+                <button id="btnIniciarServidor" class="btn-iniciar-servidor" onclick="iniciarServidor()" style="display: none;">
+                    <i class="bi bi-play-circle"></i> Iniciar Servidor
+                </button>
                 <button class="btn-settings" onclick="abrirConfiguracoes()">
                     <i class="bi bi-gear"></i> Configurações
                 </button>
@@ -273,26 +273,33 @@
 
             <div class="modal-config-body">
 
-                <!-- Instruções passo a passo -->
                 <div class="info-box">
                     <i class="bi bi-info-circle-fill"></i>
                     <div>
-                        <strong>Como iniciar o servidor?</strong>
+                        <strong>Como funciona?</strong>
                         <p>
-                            Abra a pasta <strong>servidor-whatsapp</strong> no computador
-                            e dê duplo clique em <strong>iniciar.bat</strong>.
-                            Aguarde a janela do terminal abrir e o QR Code aparecerá
-                            automaticamente nesta tela.
+                            Clique em <strong>"Iniciar Servidor"</strong> no cabeçalho.
+                            O servidor será iniciado e a página redirecionada automaticamente.
                         </p>
                     </div>
                 </div>
 
-                <!-- Endereço do servidor (somente leitura) -->
+                <div class="info-box" style="background:#fefce8;border-color:#fef08a;color:#854d0e;">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    <div>
+                        <strong>Primeira vez?</strong>
+                        <p>
+                            Execute <strong>iniciar.bat</strong> na pasta <strong>servidor-whatsapp</strong>
+                            uma única vez para registrar o sistema. Depois disso, o botão do navegador funciona.
+                        </p>
+                    </div>
+                </div>
+
                 <div class="form-group">
                     <h5>Servidor rodando em</h5>
                     <input
                         type="text"
-                        value="http://localhost:3000"
+                        value="http://127.0.0.1:3000"
                         readonly
                         style="background:#f3f4f6;color:var(--text-gray);cursor:default;"
                     >
@@ -301,7 +308,6 @@
                     </span>
                 </div>
 
-                <!-- Status do servidor -->
                 <div id="statusServidorModal"
                      style="padding:14px 16px;border-radius:10px;font-size:0.88rem;
                             font-weight:600;text-align:center;background:#f3f4f6;color:var(--text-gray);">
@@ -312,6 +318,9 @@
 
             <div class="modal-config-footer">
                 <button class="btn-cancel" onclick="fecharConfiguracoes()">Fechar</button>
+                <button class="btn-iniciar-servidor" id="btnIniciarModal" onclick="iniciarServidor()">
+                    <i class="bi bi-play-circle"></i> Iniciar Servidor
+                </button>
                 <button class="btn-primary" onclick="testarConexaoServidor()">
                     <i class="bi bi-arrow-repeat"></i> Testar Conexão
                 </button>
@@ -335,6 +344,30 @@
     <script src="/Fronted sistema/chatbot/conexao-api.js"></script>
     <script src="/Fronted sistema/chatbot/chatbot.js"></script>
 
+
+    <!-- Modal de confirmação para iniciar servidor -->
+    <div class="modal-overlay" id="modalIniciarServidor" onclick="fecharModalServidor(event)">
+        <div class="modal-card-sair">
+            <div class="modal-icone-sair verde">
+                <i class="bi bi-hdd-rack"></i>
+            </div>
+            <h3>Iniciar Servidor?</h3>
+            <p>O servidor WhatsApp será iniciado no seu computador para permitir o envio de mensagens.</p>
+            <div class="modal-usuario-card" style="justify-content:center; text-align:center;">
+                <i class="bi bi-whatsapp" style="color:#25D366; font-size:1.6rem;"></i>
+                <div>
+                    <strong>Servidor WhatsApp Local</strong>
+                    <span>http://localhost:3000</span>
+                </div>
+            </div>
+            <div class="modal-acoes">
+                <button class="btn-modal-cancelar" onclick="fecharModalServidor()">Cancelar</button>
+                <button class="btn-modal-sair verde" id="btnConfirmarIniciar" onclick="confirmarIniciarServidor()">
+                    <i class="bi bi-play-fill"></i> Iniciar
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- Modal de confirmação de saída -->
     <div class="modal-overlay" id="modalSair" onclick="fecharModalSair(event)">

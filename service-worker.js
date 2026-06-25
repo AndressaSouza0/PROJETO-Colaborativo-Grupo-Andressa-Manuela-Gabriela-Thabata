@@ -1,4 +1,4 @@
-const CACHE_NAME = 'biblioteca-ja-v1';
+const CACHE_NAME = 'biblioteca-ja-v2';
 
 const ASSETS_TO_CACHE = [
   '/Fronted sistema/login/login.html',
@@ -55,9 +55,10 @@ self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
 
   if (url.origin !== location.origin) {
-    event.respondWith(
-      fetch(event.request).catch(() => caches.match(event.request))
-    );
+    return;
+  }
+
+  if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/enviar-')) {
     return;
   }
 
@@ -73,6 +74,7 @@ self.addEventListener('fetch', event => {
         if (event.request.headers.get('accept')?.includes('text/html')) {
           return caches.match('/Fronted sistema/login/login.html');
         }
+        return new Response('Offline', { status: 503, statusText: 'Service Unavailable' });
       }))
   );
 });

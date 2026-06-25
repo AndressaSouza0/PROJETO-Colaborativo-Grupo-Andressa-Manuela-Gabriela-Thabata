@@ -283,6 +283,34 @@ header span {
 
 .btn-cancel:hover { background: #f1f3f4; }
 
+.btn-iniciar-servidor {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, var(--whatsapp-green), var(--whatsapp-dark));
+    color: white;
+    border: none;
+    padding: 9px 18px;
+    border-radius: var(--radius-btn);
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(37, 211, 102, 0.3);
+}
+
+.btn-iniciar-servidor:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(37, 211, 102, 0.4);
+}
+
+.btn-iniciar-servidor:disabled {
+    background: #adb5bd;
+    box-shadow: none;
+    cursor: not-allowed;
+    transform: none;
+}
+
 .btn-atualizar-qr {
     display: inline-flex;
     align-items: center;
