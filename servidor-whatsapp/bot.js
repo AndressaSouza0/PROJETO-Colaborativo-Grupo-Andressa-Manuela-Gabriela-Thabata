@@ -18,6 +18,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+app.get('/', (req, res) => res.redirect('/Fronted%20sistema/login/login.html'));
+app.get('/favicon.ico', (req, res) => res.redirect('/img/icon.svg'));
 app.use(express.static(path.join(__dirname, '..')));
 
 let estado     = 'desconectado'; // 'desconectado' | 'aguardando_qr' | 'conectado'
