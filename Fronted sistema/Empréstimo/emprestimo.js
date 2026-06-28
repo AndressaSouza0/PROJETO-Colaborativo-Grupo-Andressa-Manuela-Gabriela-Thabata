@@ -298,27 +298,32 @@ btnFinalizar.onclick = async () => {
 
         if (errorEx) throw errorEx;
 
-        // 3. Atualiza a lista imediatamente e fecha o formulário
+        // 3. Captura os dados antes de resetar o formulário
+        const telefoneAluno = alunoSelecionado.telefone;
+        const nomeAluno = alunoSelecionado.nome_aluno;
+        const raAluno = alunoSelecionado.ra;
+        const tituloLivro = livroSelecionado?.titulo || exemplarSelecionado?.codigo_interno || 'Livro';
+
+        // 4. Atualiza a lista imediatamente e fecha o formulário
         fecharCadastro();
         listarEmprestimos();
 
-        // 4. ENVIAR MENSAGENS PELO WHATSAPP (independente do banco — não bloqueia o fluxo)
-        if (alunoSelecionado.telefone && typeof ChatbotAPI !== 'undefined') {
+        // 5. ENVIAR MENSAGENS PELO WHATSAPP (independente do banco — não bloqueia o fluxo)
+        if (telefoneAluno && typeof ChatbotAPI !== 'undefined') {
             const dataDevolucaoFormatada = dataPrevista.toLocaleDateString('pt-BR');
-            const tituloLivro = livroSelecionado?.titulo || exemplarSelecionado?.codigo_interno || 'Livro';
 
             try {
-                const respPrimeiro = await fetch(`${ChatbotAPI.baseUrl}/api/primeiro-emprestimo/${alunoSelecionado.ra}`);
+                const respPrimeiro = await fetch(`${ChatbotAPI.baseUrl}/api/primeiro-emprestimo/${raAluno}`);
                 const dadosPrimeiro = await respPrimeiro.json();
                 if (dadosPrimeiro.primeiro) {
-                    await ChatbotAPI.enviarBoasVindas(alunoSelecionado.nome_aluno, alunoSelecionado.telefone);
+                    await ChatbotAPI.enviarBoasVindas(nomeAluno, telefoneAluno);
                 }
             } catch {}
 
             try {
                 const resultado = await ChatbotAPI.enviarConfirmacaoEmprestimo(
-                    alunoSelecionado.nome_aluno,
-                    alunoSelecionado.telefone,
+                    nomeAluno,
+                    telefoneAluno,
                     tituloLivro,
                     dataDevolucaoFormatada
                 );
