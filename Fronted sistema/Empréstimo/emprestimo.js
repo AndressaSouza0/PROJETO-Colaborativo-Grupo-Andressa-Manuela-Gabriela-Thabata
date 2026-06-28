@@ -258,6 +258,13 @@ btnFinalizar.onclick = async () => {
     if (!alunoSelecionado || !exemplarSelecionado) return;
     if (btnFinalizar.disabled) return;
 
+    // Captura os dados ANTES de qualquer await para evitar null se o formulário for fechado durante a espera
+    const telefoneAluno = alunoSelecionado.telefone;
+    const nomeAluno = alunoSelecionado.nome_aluno;
+    const raAluno = alunoSelecionado.ra;
+    const exemplarId = exemplarSelecionado.id;
+    const tituloLivro = livroSelecionado?.titulo || exemplarSelecionado?.codigo_interno || 'Livro';
+
     btnFinalizar.disabled = true;
     btnFinalizar.innerHTML = '<i class="bi bi-arrow-repeat spinning"></i> Salvando...';
 
@@ -280,8 +287,8 @@ btnFinalizar.onclick = async () => {
     try {
         // 1. Salvar no Banco de Dados
         const { error: errorEmp } = await supabaseClient.from('emprestimos').insert([{
-            aluno_ra: alunoSelecionado.ra,
-            exemplar_id: exemplarSelecionado.id,
+            aluno_ra: raAluno,
+            exemplar_id: exemplarId,
             data_prevista: dataPrevistaFormatada,
             data_aviso_expiracao: dataAvisoFormatada,
             data_aviso_atraso: dataAtrasoFimFormatada,
@@ -294,15 +301,9 @@ btnFinalizar.onclick = async () => {
         const { error: errorEx } = await supabaseClient
             .from('exemplares')
             .update({ status: 'Emprestado' })
-            .eq('id', exemplarSelecionado.id);
+            .eq('id', exemplarId);
 
         if (errorEx) throw errorEx;
-
-        // 3. Captura os dados antes de resetar o formulário
-        const telefoneAluno = alunoSelecionado.telefone;
-        const nomeAluno = alunoSelecionado.nome_aluno;
-        const raAluno = alunoSelecionado.ra;
-        const tituloLivro = livroSelecionado?.titulo || exemplarSelecionado?.codigo_interno || 'Livro';
 
         // 4. Atualiza a lista imediatamente e fecha o formulário
         fecharCadastro();
