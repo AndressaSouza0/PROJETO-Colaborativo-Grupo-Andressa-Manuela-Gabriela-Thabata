@@ -10,9 +10,11 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // --- ESTADO ---
-let templateSelecionado = null;
-let emprestimosAluno    = [];
-let qrRefreshTimer      = null;
+let templateSelecionado    = null;
+let emprestimosAluno       = [];
+let qrRefreshTimer         = null;
+let qrVisivel              = false; // true quando o QR foi exibido com sucesso ao usuário
+let pollingConexaoInterval = null;  // intervalo agressivo durante sincronização
 
 // ================================================================
 // TEMPLATES DE MENSAGEM
@@ -91,18 +93,42 @@ async function verificarEAtualizarStatus() {
         areaQR.style.display = 'none';
         btnIniciar.style.display = 'none';
         pararRefreshQR();
+        fecharModalConectando();
     } else if (resultado.estado === 'erro') {
         badge.className  = 'status-badge-whatsapp status-erro';
         texto.textContent = '● Servidor offline';
         areaQR.style.display = 'none';
         btnIniciar.style.display = '';
         pararRefreshQR();
+        fecharModalConectando();
     } else {
         badge.className  = 'status-badge-whatsapp status-desconectado';
         texto.textContent = '● Desconectado';
         areaQR.style.display = 'block';
         btnIniciar.style.display = 'none';
         if (!qrRefreshTimer) carregarQRCode();
+    }
+}
+
+function mostrarModalConectando() {
+    const modal = document.getElementById('modalConectando');
+    if (modal) modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+
+    // Poll a cada 3s até conectar
+    if (!pollingConexaoInterval) {
+        pollingConexaoInterval = setInterval(verificarEAtualizarStatus, 3000);
+    }
+}
+
+function fecharModalConectando() {
+    const modal = document.getElementById('modalConectando');
+    if (modal) modal.style.display = 'none';
+    document.body.style.overflow = '';
+
+    if (pollingConexaoInterval) {
+        clearInterval(pollingConexaoInterval);
+        pollingConexaoInterval = null;
     }
 }
 
@@ -133,6 +159,7 @@ async function carregarQRCode() {
     const resultado = await ChatbotAPI.obterQRCode();
 
     if (resultado.sucesso) {
+        qrVisivel = true;
         container.innerHTML = `
             <img src="${resultado.qrCode}"
                  alt="QR Code WhatsApp"
@@ -141,14 +168,21 @@ async function carregarQRCode() {
         // QR do WhatsApp expira em ~60s — atualiza automaticamente a cada 45s
         qrRefreshTimer = setTimeout(carregarQRCode, 45000);
     } else {
-        container.innerHTML = `
-            <i class="bi bi-exclamation-circle" style="font-size:2rem;color:var(--danger-red);"></i>
-            <span style="color:var(--danger-red);text-align:center;font-size:0.88rem;">
-                ${resultado.erro}
-            </span>
-        `;
-        // QR ainda não está pronto — tenta de novo em 5 segundos
-        qrRefreshTimer = setTimeout(carregarQRCode, 5000);
+        if (qrVisivel) {
+            // QR estava visível e sumiu: usuário escaneou o código → mostrar modal de sincronização
+            qrVisivel = false;
+            areaQR.style.display = 'none';
+            mostrarModalConectando();
+        } else {
+            container.innerHTML = `
+                <i class="bi bi-exclamation-circle" style="font-size:2rem;color:var(--danger-red);"></i>
+                <span style="color:var(--danger-red);text-align:center;font-size:0.88rem;">
+                    ${resultado.erro}
+                </span>
+            `;
+            // QR ainda não está pronto — tenta de novo em 5 segundos
+            qrRefreshTimer = setTimeout(carregarQRCode, 5000);
+        }
     }
 }
 
