@@ -295,6 +295,33 @@ html.modo-noturno table thead th {
     border-color: #252638 !important;
 }
 
+/* Empréstimo — formulário de cadastro (step-container fica branco sem isso) */
+html.modo-noturno .step-container {
+    background: #252636 !important;
+    border-color: #3d4060 !important;
+}
+html.modo-noturno .card-header {
+    border-bottom-color: #2d2f45 !important;
+}
+html.modo-noturno .card-header h3 {
+    color: #e2e8f0 !important;
+}
+html.modo-noturno .input-with-button input {
+    border-color: #3d4060 !important;
+    background-color: #1e1f2e !important;
+}
+html.modo-noturno .form-actions {
+    border-top-color: #2d2f45 !important;
+}
+html.modo-noturno .btn-cancel {
+    background: #2a2b3d !important;
+    border-color: #3d4060 !important;
+    color: #e2e8f0 !important;
+}
+html.modo-noturno .btn-cancel:hover {
+    background: #363750 !important;
+}
+
 /* Empréstimo — botões devolver / devolvido */
 html.modo-noturno .btn-return {
     background-color: #0b2a1e !important;
