@@ -298,40 +298,42 @@ btnFinalizar.onclick = async () => {
 
         if (errorEx) throw errorEx;
 
-        // 3. ENVIAR MENSAGENS PELO WHATSAPP
+        // 3. Atualiza a lista imediatamente e fecha o formulário
+        fecharCadastro();
+        listarEmprestimos();
+
+        // 4. ENVIAR MENSAGENS PELO WHATSAPP (independente do banco — não bloqueia o fluxo)
         if (alunoSelecionado.telefone && typeof ChatbotAPI !== 'undefined') {
             const dataDevolucaoFormatada = dataPrevista.toLocaleDateString('pt-BR');
+            const tituloLivro = livroSelecionado?.titulo || exemplarSelecionado?.codigo_interno || 'Livro';
 
             try {
                 const respPrimeiro = await fetch(`${ChatbotAPI.baseUrl}/api/primeiro-emprestimo/${alunoSelecionado.ra}`);
                 const dadosPrimeiro = await respPrimeiro.json();
                 if (dadosPrimeiro.primeiro) {
-                    await ChatbotAPI.enviarBoasVindas(
-                        alunoSelecionado.nome_aluno,
-                        alunoSelecionado.telefone
-                    );
+                    await ChatbotAPI.enviarBoasVindas(alunoSelecionado.nome_aluno, alunoSelecionado.telefone);
                 }
             } catch {}
 
-            const resultado = await ChatbotAPI.enviarConfirmacaoEmprestimo(
-                alunoSelecionado.nome_aluno,
-                alunoSelecionado.telefone,
-                livroSelecionado.titulo,
-                dataDevolucaoFormatada
-            );
+            try {
+                const resultado = await ChatbotAPI.enviarConfirmacaoEmprestimo(
+                    alunoSelecionado.nome_aluno,
+                    alunoSelecionado.telefone,
+                    tituloLivro,
+                    dataDevolucaoFormatada
+                );
 
-            if (!resultado.sucesso) {
-                console.warn("Aviso no envio da mensagem:", resultado.erro);
-                showToast("Empréstimo salvo, mas a mensagem não foi enviada.", "error");
-            } else {
-                showToast("Empréstimo registrado e mensagem enviada com sucesso!");
+                if (resultado.sucesso) {
+                    showToast("Empréstimo registrado e mensagem enviada com sucesso!");
+                } else {
+                    showToast("Empréstimo registrado! Mensagem não enviada: WhatsApp desconectado.", "error");
+                }
+            } catch {
+                showToast("Empréstimo registrado com sucesso!");
             }
         } else {
             showToast("Empréstimo registrado com sucesso!");
         }
-
-        fecharCadastro();
-        if (typeof listarEmprestimos === 'function') listarEmprestimos();
 
     } catch (err) {
         console.error("Erro completo:", err);
@@ -442,6 +444,8 @@ async function confirmarDevolucao() {
     if (!_devEmprestimoId) return;
     const btn = document.getElementById('btnConfirmarDevolucao');
     btn.disabled = true;
+    btn.innerHTML = '<i class="bi bi-arrow-repeat spinning"></i> Confirmando...';
+
     try {
         const { data: empDados } = await supabaseClient
             .from('emprestimos')
@@ -456,22 +460,36 @@ async function confirmarDevolucao() {
             .from('exemplares').update({ status: 'Disponível' }).eq('id', _devExemplarId);
         if (err2) throw err2;
 
-        if (empDados?.alunos?.telefone && typeof ChatbotAPI !== 'undefined') {
-            await ChatbotAPI.enviarConfirmacaoDevolucao(
-                empDados.alunos.nome_aluno, empDados.alunos.telefone,
-                empDados.exemplares?.livros?.titulo || 'livro'
-            );
-        }
-
         document.getElementById('modalDevolucao').classList.remove('ativo');
         document.body.style.overflow = '';
-        showToast("Devolução registrada!");
         listarEmprestimos();
+
+        // Enviar WhatsApp (não bloqueia nem impede o registro da devolução)
+        if (empDados?.alunos?.telefone && typeof ChatbotAPI !== 'undefined') {
+            try {
+                const resultadoMsg = await ChatbotAPI.enviarConfirmacaoDevolucao(
+                    empDados.alunos.nome_aluno,
+                    empDados.alunos.telefone,
+                    empDados.exemplares?.livros?.titulo || 'livro'
+                );
+                if (resultadoMsg.sucesso) {
+                    showToast("Devolução registrada e mensagem enviada com sucesso!");
+                } else {
+                    showToast("Devolução registrada! Mensagem não enviada: WhatsApp desconectado.", "error");
+                }
+            } catch {
+                showToast("Devolução registrada com sucesso!");
+            }
+        } else {
+            showToast("Devolução registrada com sucesso!");
+        }
+
     } catch (err) {
         console.error("Erro na devolução:", err);
         showToast("Erro na devolução: " + (err.message || "Consulte o console"), "error");
     } finally {
         btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-check-circle-fill"></i> Confirmar devolução';
         _devEmprestimoId = null; _devExemplarId = null;
     }
 }
