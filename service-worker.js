@@ -33,9 +33,13 @@ const ASSETS_TO_CACHE = [
 
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(ASSETS_TO_CACHE))
-      .then(() => self.skipWaiting())
+    caches.open(CACHE_NAME).then(cache =>
+      Promise.all(
+        ASSETS_TO_CACHE.map(url =>
+          cache.add(url).catch(() => {})
+        )
+      )
+    ).then(() => self.skipWaiting())
   );
 });
 
