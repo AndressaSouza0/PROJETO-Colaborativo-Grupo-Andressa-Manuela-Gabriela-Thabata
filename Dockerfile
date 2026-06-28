@@ -1,4 +1,4 @@
-FROM node:18-slim
+FROM node:22-slim
 
 # Instala Chromium e fontes necessárias para o whatsapp-web.js funcionar no Linux
 RUN apt-get update && apt-get install -y \
