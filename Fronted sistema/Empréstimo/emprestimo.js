@@ -81,7 +81,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     listarEmprestimos();
-    verificarAvisosAutomaticos();
 
     function normalizarTexto(str) {
         return str.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
@@ -257,6 +256,10 @@ document.getElementById('btnBuscarAluno').onclick = async () => {
 // --- FINALIZAR EMPRÉSTIMO ---
 btnFinalizar.onclick = async () => {
     if (!alunoSelecionado || !exemplarSelecionado) return;
+    if (btnFinalizar.disabled) return;
+
+    btnFinalizar.disabled = true;
+    btnFinalizar.innerHTML = '<i class="bi bi-arrow-repeat spinning"></i> Salvando...';
 
     const hoje = new Date();
 
@@ -299,10 +302,16 @@ btnFinalizar.onclick = async () => {
         if (alunoSelecionado.telefone && typeof ChatbotAPI !== 'undefined') {
             const dataDevolucaoFormatada = dataPrevista.toLocaleDateString('pt-BR');
 
-            await ChatbotAPI.enviarBoasVindas(
-                alunoSelecionado.nome_aluno,
-                alunoSelecionado.telefone
-            );
+            try {
+                const respPrimeiro = await fetch(`${ChatbotAPI.baseUrl}/api/primeiro-emprestimo/${alunoSelecionado.ra}`);
+                const dadosPrimeiro = await respPrimeiro.json();
+                if (dadosPrimeiro.primeiro) {
+                    await ChatbotAPI.enviarBoasVindas(
+                        alunoSelecionado.nome_aluno,
+                        alunoSelecionado.telefone
+                    );
+                }
+            } catch {}
 
             const resultado = await ChatbotAPI.enviarConfirmacaoEmprestimo(
                 alunoSelecionado.nome_aluno,
@@ -327,6 +336,8 @@ btnFinalizar.onclick = async () => {
     } catch (err) {
         console.error("Erro completo:", err);
         showToast("Erro ao salvar: " + (err.message || "Verifique as colunas do banco"), "error");
+        btnFinalizar.disabled = false;
+        btnFinalizar.innerHTML = 'Finalizar Empréstimo';
     }
 };
 
@@ -463,61 +474,6 @@ async function confirmarDevolucao() {
         btn.disabled = false;
         _devEmprestimoId = null; _devExemplarId = null;
     }
-}
-
-async function devolverLivro(emprestimoId, exemplarId) {
-}
-
-// --- AVISOS AUTOMÁTICOS ---
-async function verificarAvisosAutomaticos() {
-    if (typeof ChatbotAPI === 'undefined') return;
-
-    const hoje = new Date().toISOString().split('T')[0];
-
-    const { data: expirando } = await supabaseClient
-        .from('emprestimos')
-        .select('id, data_prevista, alunos(nome_aluno, telefone), exemplares(livros(titulo))')
-        .eq('data_aviso_expiracao', hoje)
-        .eq('status', 'Ativo');
-
-    for (const emp of (expirando || [])) {
-        const chave = `notif_expiracao_${emp.id}`;
-        if (localStorage.getItem(chave) || !emp.alunos?.telefone) continue;
-        const dataFmt = _formatarDataAviso(emp.data_prevista);
-        const res = await ChatbotAPI.enviarLembreteDevolvucao(
-            emp.alunos.nome_aluno, emp.alunos.telefone,
-            emp.exemplares?.livros?.titulo || 'livro', dataFmt
-        );
-        if (res.sucesso) localStorage.setItem(chave, '1');
-    }
-
-    const { data: atrasados } = await supabaseClient
-        .from('emprestimos')
-        .select('id, data_prevista, alunos(nome_aluno, telefone), exemplares(livros(titulo))')
-        .eq('data_aviso_atraso', hoje)
-        .eq('status', 'Ativo');
-
-    for (const emp of (atrasados || [])) {
-        const chave = `notif_atraso_${emp.id}`;
-        if (localStorage.getItem(chave) || !emp.alunos?.telefone) continue;
-        const dias = _calcDiasAtraso(emp.data_prevista);
-        const res = await ChatbotAPI.enviarAvisoAtraso(
-            emp.alunos.nome_aluno, emp.alunos.telefone,
-            emp.exemplares?.livros?.titulo || 'livro', dias
-        );
-        if (res.sucesso) localStorage.setItem(chave, '1');
-    }
-}
-
-function _formatarDataAviso(dateStr) {
-    if (!dateStr) return '';
-    const [ano, mes, dia] = dateStr.split('-');
-    return `${dia}/${mes}/${ano}`;
-}
-
-function _calcDiasAtraso(dataPrevista) {
-    const diff = Math.floor((new Date() - new Date(dataPrevista)) / (1000 * 60 * 60 * 24));
-    return diff > 0 ? diff : 1;
 }
 
 function toggleSidebar() {

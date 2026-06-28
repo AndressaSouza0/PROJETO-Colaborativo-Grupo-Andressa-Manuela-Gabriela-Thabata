@@ -109,7 +109,7 @@
                             <span class="check-box"></span>
                             Lembrar-me
                         </label>
-                        <a href="#" class="link-esqueci" onclick="return esqueceuSenha()">Esqueci a senha</a>
+                        <a href="#" class="link-esqueci" id="link-esqueci" onclick="return esqueceuSenha()"><i class="bi bi-arrow-repeat girando" id="link-esqueci-spin" style="display:none; font-size:0.8rem;"></i> Esqueci a senha</a>
                     </div>
 
                     <button type="submit" class="btn-principal" id="btn-login">
@@ -214,6 +214,29 @@
         </div>
     </div>
 
+</div>
+
+<!-- Modal recuperação de senha -->
+<div class="modal-reset-overlay" id="modal-reset" onclick="fecharModalReset(event)">
+    <div class="modal-reset-card">
+        <div class="modal-reset-icone">
+            <i class="bi bi-key-fill"></i>
+        </div>
+        <h3>Link de Redefinição</h3>
+        <p>Copie o link abaixo e abra-o no navegador para criar uma nova senha.<br>O link expira em <strong>1 hora</strong>.</p>
+        <div class="reset-url-box">
+            <code id="reset-url-text"></code>
+        </div>
+        <div class="reset-acoes">
+            <button class="btn-reset-fechar" onclick="fecharModalReset()">Fechar</button>
+            <button class="btn-reset-copiar" id="btn-copiar-reset" onclick="copiarLinkReset()">
+                <i class="bi bi-clipboard"></i> Copiar
+            </button>
+            <button class="btn-reset-abrir" onclick="abrirLinkReset()">
+                <i class="bi bi-box-arrow-up-right"></i> Abrir
+            </button>
+        </div>
+    </div>
 </div>
 
 <!-- Supabase SDK -->

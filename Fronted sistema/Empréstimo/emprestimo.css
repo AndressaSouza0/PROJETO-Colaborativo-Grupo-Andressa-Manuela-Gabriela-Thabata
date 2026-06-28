@@ -956,3 +956,12 @@ header span {
     .toast { min-width: unset; width: calc(100vw - 48px); }
     .toast-container { right: 16px; bottom: 16px; left: 16px; }
 }
+
+.spinning {
+    display: inline-block;
+    animation: spin 0.9s linear infinite;
+}
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}

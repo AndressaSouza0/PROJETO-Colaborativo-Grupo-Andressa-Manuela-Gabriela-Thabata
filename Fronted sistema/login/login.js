@@ -321,13 +321,96 @@ async function fazerCadastro(evento) {
    ESQUECI A SENHA
    ================================================================ */
 function esqueceuSenha() {
-    const email = document.getElementById('l-email').value.trim();
+    _processarRecuperacao();
+    return false;
+}
+
+async function _processarRecuperacao() {
+    const email  = document.getElementById('l-email').value.trim();
+    const linkEl = document.getElementById('link-esqueci');
+    const spinEl = document.getElementById('link-esqueci-spin');
+
     if (!email) {
         exibirAlerta('alerta-login', 'Informe seu e-mail antes de solicitar a recuperação.', 'erro');
-    } else {
-        exibirAlerta('alerta-login', `Link de recuperação enviado para ${email}.`, 'sucesso');
+        return;
     }
-    return false;
+
+    if (linkEl) linkEl.style.pointerEvents = 'none';
+    if (spinEl) spinEl.style.display = 'inline-block';
+
+    try {
+        const { data, error: errCheck } = await supabaseClient
+            .from('administradores')
+            .select('email')
+            .eq('email', email)
+            .eq('ativo', true)
+            .maybeSingle();
+
+        if (errCheck) {
+            exibirAlerta('alerta-login', 'Erro ao verificar o e-mail. Tente novamente.', 'erro');
+            return;
+        }
+
+        if (!data) {
+            exibirAlerta('alerta-login', 'E-mail não encontrado no sistema.', 'erro');
+            return;
+        }
+
+        const arr       = new Uint8Array(32);
+        crypto.getRandomValues(arr);
+        const token     = Array.from(arr).map(b => b.toString(16).padStart(2, '0')).join('');
+        const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+
+        const { error: errInsert } = await supabaseClient
+            .from('reset_tokens')
+            .insert([{ email, token, expires_at: expiresAt }]);
+
+        if (errInsert) {
+            exibirAlerta('alerta-login', 'Erro ao gerar link. Tente novamente.', 'erro');
+            return;
+        }
+
+        const url = `${location.origin}/Fronted%20sistema/login/redefinir-senha.html?token=${token}`;
+        abrirModalReset(url);
+
+    } catch (err) {
+        console.error('Erro na recuperação de senha:', err);
+        exibirAlerta('alerta-login', 'Erro ao processar. Tente novamente.', 'erro');
+    } finally {
+        if (linkEl) linkEl.style.pointerEvents = '';
+        if (spinEl) spinEl.style.display = 'none';
+    }
+}
+
+function abrirModalReset(url) {
+    document.getElementById('reset-url-text').textContent = url;
+    document.getElementById('modal-reset').classList.add('ativo');
+    document.body.style.overflow = 'hidden';
+}
+
+function fecharModalReset(event) {
+    if (event && event.target !== document.getElementById('modal-reset')) return;
+    document.getElementById('modal-reset').classList.remove('ativo');
+    document.body.style.overflow = '';
+}
+
+async function copiarLinkReset() {
+    const url = document.getElementById('reset-url-text').textContent;
+    try {
+        await navigator.clipboard.writeText(url);
+        const btn  = document.getElementById('btn-copiar-reset');
+        const orig = btn.innerHTML;
+        btn.innerHTML = '<i class="bi bi-check2"></i> Copiado!';
+        setTimeout(() => { btn.innerHTML = orig; }, 2000);
+    } catch {
+        exibirAlerta('alerta-login', 'Selecione o link manualmente para copiar.', 'erro');
+    }
+}
+
+function abrirLinkReset() {
+    const url = document.getElementById('reset-url-text').textContent;
+    fecharModalReset();
+    window.open(url, '_blank');
 }
 
 /* ================================================================

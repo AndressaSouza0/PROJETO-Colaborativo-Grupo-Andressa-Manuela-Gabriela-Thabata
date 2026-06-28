@@ -344,12 +344,13 @@ async function abrirEditarAluno(ra) {
 function atualizarSeriesEdicao() {
     const ensino = document.getElementById('editEnsino').value;
     const sel = document.getElementById('editSerie');
-    const fund = ['6º Ano','7º Ano','8º Ano','9º Ano'];
-    const medio = ['1ª Série','2ª Série','3ª Série'];
+    const fund = ['6°', '7°', '8°', '9°'];
+    const medio = ['1°', '2°', '3°'];
     const series = ensino === 'Fundamental' ? fund : ensino === 'Médio' ? medio : [];
+    const labelFn = (s) => ensino === 'Fundamental' ? `${s} Ano` : `${s} Série`;
     sel.innerHTML = series.length === 0
         ? '<option value="">Selecione o ensino primeiro</option>'
-        : series.map(s => `<option value="${s}">${s}</option>`).join('');
+        : series.map(s => `<option value="${s}">${labelFn(s)}</option>`).join('');
 }
 
 function fecharEditarAluno(event) {

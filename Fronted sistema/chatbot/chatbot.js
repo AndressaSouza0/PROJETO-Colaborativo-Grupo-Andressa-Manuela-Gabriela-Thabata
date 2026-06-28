@@ -602,31 +602,36 @@ function confirmarIniciarServidor() {
     btnConfirmar.disabled = true;
     btnConfirmar.innerHTML = '<i class="bi bi-hourglass-split spinning"></i> Iniciando...';
 
-    window.location.href = 'biblioteca-server://start';
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    iframe.src = 'biblioteca-server://start';
+    document.body.appendChild(iframe);
+    setTimeout(() => iframe.remove(), 2000);
 
     const CHATBOT_URL = 'http://localhost:3000/Fronted%20sistema/chatbot/chatbot.html';
     let tentativas = 0;
 
     const poll = setInterval(() => {
         tentativas++;
-        const img = new Image();
-        img.onload = () => {
-            clearInterval(poll);
-            window.location.href = CHATBOT_URL;
-        };
-        img.onerror = () => {
-            if (tentativas >= 10) {
-                clearInterval(poll);
-                btnConfirmar.disabled = false;
-                btnConfirmar.innerHTML = '<i class="bi bi-play-fill"></i> Iniciar';
-                fecharModalServidor();
-                mostrarToast(
-                    'Servidor não respondeu. Execute "iniciar.bat" na pasta servidor-whatsapp uma primeira vez para registrar.',
-                    'erro'
-                );
-            }
-        };
-        img.src = 'http://localhost:3000/img/icon.svg?' + Date.now();
+        fetch('http://localhost:3000/api/status')
+            .then(res => {
+                if (res.ok) {
+                    clearInterval(poll);
+                    window.location.href = CHATBOT_URL;
+                }
+            })
+            .catch(() => {
+                if (tentativas >= 10) {
+                    clearInterval(poll);
+                    btnConfirmar.disabled = false;
+                    btnConfirmar.innerHTML = '<i class="bi bi-play-fill"></i> Iniciar';
+                    fecharModalServidor();
+                    mostrarToast(
+                        'Servidor não respondeu. Execute "iniciar.bat" na pasta servidor-whatsapp uma primeira vez para registrar o protocolo.',
+                        'erro'
+                    );
+                }
+            });
     }, 3000);
 }
 

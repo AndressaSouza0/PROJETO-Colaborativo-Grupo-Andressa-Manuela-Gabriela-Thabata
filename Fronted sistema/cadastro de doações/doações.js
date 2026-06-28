@@ -358,7 +358,8 @@ inputQtd.addEventListener('input', function () {
                             class="input-rfid"
                             placeholder="Aproxime a tag ou digite"
                             maxlength="20"
-                            oninput="this.value = this.value.replace(/\\D/g, '')">
+                            oninput="this.value = this.value.replace(/\\D/g, '')"
+                            onkeydown="if(event.key==='Enter')event.preventDefault()">
                     </div>
                     <div class="etiqueta-campo">
                         <label><i class="bi bi-upc-scan"></i> Código Interno</label>

@@ -209,9 +209,9 @@
 
     </div>
 
-</div>
+                    </div>
 
-                    <div class="step-container" style="margin-top: 25px;">
+                    <div class="step-container" id="stepAluno" style="margin-top: 25px;">
                         <label class="step-title">2. Buscar Aluno por RA</label>
                         <div class="input-with-button">
                             <input type="text" id="raInput" placeholder="Digite o RA do aluno...">
@@ -245,51 +245,9 @@
                     <button type="button" id="btnFinalizarEmprestimo" class="btn-primary" disabled>
                         Finalizar Empréstimo
                     </button>
-    <div id="area-cadastro" style="display: none; margin-top: 30px;">
-        <div class="card-cadastro-integrado">
-            <div class="card-header">
-                <h3>Registrar Novo Empréstimo</h3>
+                </div>
+                </form>
             </div>
-
-            <form id="formCadastroEmprestimo">
-                <div class="step-container">
-                    <label class="step-title">1. Leitura da Etiqueta do Livro</label>
-                    <div class="input-with-button">
-                        <input type="text" id="rfidInput" placeholder="Aguardando leitura da tag..." autofocus>
-                        <button type="button" class="btn-scan" id="btnLerTag">
-                            <i class="bi bi-qr-code-scan"></i> Ler Tag
-                        </button>
-                    </div>
-                    
-                    <div id="loadingLivro" class="loading-animation" style="display: none;">
-                        <div class="spinner"></div>
-                        <span>Processando leitura RFID...</span>
-                    </div>
-
-                    <div id="cardLivroResult" class="result-card livro-card" style="display: none;">
-                        <div class="card-body-grid">
-                            <div><strong>Livro:</strong> <span id="resTitulo">-</span></div>
-                            <div><strong>Autor:</strong> <span id="resAutor">-</span></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="step-container">
-                    <label class="step-title">2. Buscar Aluno por RA</label>
-                    <div class="input-with-button">
-                        <input type="text" id="raInput" placeholder="Digite o RA do aluno...">
-                        <button type="button" class="btn-search" id="btnBuscarAluno">
-                            <i class="bi bi-search"></i> Buscar
-                        </button>
-                    </div>
-                </div>
-
-                <div class="form-actions">
-                    <button type="button" class="btn-cancel" onclick="fecharCadastro()">Cancelar</button>
-                    <button type="button" id="btnFinalizarEmprestimo" class="btn-primary" disabled>Finalizar Empréstimo</button>
-                </div>
-            </form>
-        </div>
     </div>
 </main>
 

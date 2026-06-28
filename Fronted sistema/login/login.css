@@ -1022,3 +1022,107 @@ html.modo-noturno .acessib-btns-login .btn-fonte.ativo {
     .abas { padding: 5px; }
     .card-acesso { border-radius: 12px; }
 }
+
+/* ================================================================
+   MODAL RECUPERAÇÃO DE SENHA
+   ================================================================ */
+.modal-reset-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.55);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 99999;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .25s, visibility .25s;
+}
+.modal-reset-overlay.ativo {
+    opacity: 1;
+    visibility: visible;
+}
+.modal-reset-card {
+    background: var(--white);
+    border-radius: 20px;
+    padding: 36px 32px 28px;
+    width: 100%;
+    max-width: 480px;
+    text-align: center;
+    box-shadow: 0 28px 70px rgba(0,0,0,.25);
+    transform: scale(.88) translateY(24px);
+    transition: transform .35s cubic-bezier(.34,1.56,.64,1);
+}
+.modal-reset-overlay.ativo .modal-reset-card {
+    transform: scale(1) translateY(0);
+}
+.modal-reset-icone {
+    width: 64px; height: 64px; border-radius: 50%;
+    background: var(--primary-light);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 18px;
+}
+.modal-reset-icone i { font-size: 1.7rem; color: var(--primary); }
+.modal-reset-card h3 {
+    font-family: "Raleway", sans-serif;
+    font-size: 1.25rem; font-weight: 800;
+    color: var(--text-dark); margin-bottom: 8px;
+}
+.modal-reset-card > p {
+    font-size: 0.84rem; color: var(--text-gray);
+    line-height: 1.6; margin-bottom: 20px;
+}
+.reset-url-box {
+    background: #f0f2f5;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 20px;
+    text-align: left;
+    word-break: break-all;
+    max-height: 72px;
+    overflow-y: auto;
+}
+.reset-url-box code {
+    font-size: 0.76rem;
+    color: var(--primary-dark);
+    font-family: "Courier New", monospace;
+    line-height: 1.5;
+}
+.reset-acoes {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+.btn-reset-fechar,
+.btn-reset-copiar,
+.btn-reset-abrir {
+    height: 42px; padding: 0 18px;
+    border-radius: 10px; border: none;
+    font-size: 0.86rem; font-weight: 600;
+    font-family: "Open Sans", sans-serif;
+    cursor: pointer;
+    display: flex; align-items: center; gap: 6px;
+    transition: background .2s, transform .18s, box-shadow .2s;
+}
+.btn-reset-fechar {
+    background: #f0f2f5; color: var(--text-gray);
+    border: 2px solid var(--border);
+}
+.btn-reset-fechar:hover { background: var(--border); color: var(--text-dark); }
+.btn-reset-copiar { background: var(--primary-light); color: var(--primary); }
+.btn-reset-copiar:hover { background: #d2e3fc; transform: translateY(-1px); }
+.btn-reset-abrir { background: var(--primary); color: #fff; }
+.btn-reset-abrir:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(26,115,232,.35); }
+
+/* Modo noturno */
+html.modo-noturno .modal-reset-card { background: #1b212b; }
+html.modo-noturno .modal-reset-card h3 { color: #f1f3f5; }
+html.modo-noturno .modal-reset-card > p { color: #8b96a5; }
+html.modo-noturno .reset-url-box { background: #11151c; border-color: #2a3340; }
+html.modo-noturno .reset-url-box code { color: var(--primary-light); }
+html.modo-noturno .btn-reset-fechar { background: #2a3340; border-color: #3a4555; color: #8b96a5; }
+html.modo-noturno .btn-reset-fechar:hover { background: #3a4555; color: #f1f3f5; }
