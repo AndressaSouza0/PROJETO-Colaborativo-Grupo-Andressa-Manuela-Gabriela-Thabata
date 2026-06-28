@@ -835,3 +835,21 @@ html.modo-noturno .cs-option { color: #e2e8f0; }
 html.modo-noturno .cs-option:hover { background: #2a2b3d; color: #93c5fd; }
 html.modo-noturno .cs-option.cs-sel { background: #1e3a5f; color: #93c5fd; }
 html.modo-noturno .cs-option.cs-ph { color: #64748b; }
+
+/* =========================================================
+   SIDEBAR MOBILE — estilos responsivos centralizados
+   ========================================================= */
+@media (max-width: 768px) {
+    /* O botão de colapsar fica fora do sidebar no mobile (right:-14px),
+       aparecendo na borda esquerda da tela quando fechado e sobreposdo
+       ao overlay quando aberto. No mobile o hamburger e o overlay
+       já cumprem esse papel — esconde o botão. */
+    .sidebar-toggle-corner {
+        display: none !important;
+    }
+
+    /* Garante que o sidebar seja rolável em telas muito pequenas */
+    .sidebar {
+        overflow-y: auto;
+    }
+}
