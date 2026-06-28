@@ -1,3 +1,10 @@
+process.on('unhandledRejection', (err) => {
+    console.error('⚠️ Erro não tratado (promise):', err.message || err);
+});
+process.on('uncaughtException', (err) => {
+    console.error('⚠️ Erro não tratado (exception):', err.message || err);
+});
+
 const { Client, LocalAuth } = require('whatsapp-web.js');
 const qrcodeTerminal = require('qrcode-terminal');
 const qrcodeLib      = require('qrcode');
@@ -5,6 +12,7 @@ const express        = require('express');
 const cors           = require('cors');
 const fs             = require('fs');
 const path           = require('path');
+const notificacoes   = require('./notificacoes');
 
 const app = express();
 app.use(cors());
@@ -36,8 +44,19 @@ const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
         headless: true,
-        executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
-        args: ['--no-sandbox']
+        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH
+            || (process.platform === 'win32'
+                ? 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
+                : '/usr/bin/chromium'),
+        args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-accelerated-2d-canvas',
+            '--no-first-run',
+            '--no-zygote',
+            '--disable-gpu'
+        ]
     }
 });
 
@@ -52,20 +71,29 @@ client.on('ready', () => {
     estado  = 'conectado';
     qrAtual = null;
     console.log('✅ WhatsApp conectado!');
+    notificacoes.aoReconectar(client, () => estado, salvarEntradaHistorico);
 });
 
 client.on('disconnected', async (reason) => {
     estado  = 'desconectado';
     qrAtual = null;
     console.log('❌ WhatsApp desconectado:', reason);
-    console.log('🔄 Reiniciando em 5 segundos para gerar novo QR Code...');
+    console.log('🔄 Reiniciando em 10 segundos para gerar novo QR Code...');
 
     setTimeout(async () => {
         try {
             await client.destroy();
         } catch {}
-        await client.initialize();
-    }, 5000);
+        try {
+            await client.initialize();
+        } catch (err) {
+            console.error('⚠️ Erro ao reiniciar WhatsApp:', err.message);
+            console.log('🔄 Tentando novamente em 15 segundos...');
+            setTimeout(async () => {
+                try { await client.initialize(); } catch {}
+            }, 15000);
+        }
+    }, 10000);
 });
 
 client.on('message', msg => {
@@ -164,11 +192,28 @@ app.get('/api/historico', (req, res) => {
     res.json(historicoEnvios);
 });
 
+// Verificar se é o primeiro empréstimo do aluno
+app.get('/api/primeiro-emprestimo/:ra', async (req, res) => {
+    const primeiro = await notificacoes.verificarPrimeiroEmprestimo(req.params.ra);
+    res.json({ primeiro });
+});
+
+// Disparar notificações manualmente (para testes)
+app.post('/api/notificacoes/executar', async (req, res) => {
+    if (estado !== 'conectado') {
+        return res.status(503).json({ sucesso: false, erro: 'WhatsApp não está conectado.' });
+    }
+    await notificacoes.processarNotificacoes(client, estado, salvarEntradaHistorico);
+    res.json({ sucesso: true, mensagem: 'Verificação de notificações executada.' });
+});
+
 // --- INICIAR ---
-app.listen(3000, () => {
-    console.log('🚀 Servidor rodando em http://localhost:3000');
-    console.log('📂 Acesse: http://localhost:3000/Fronted%20sistema/chatbot/chatbot.html');
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
+    console.log(`📂 Acesse: http://localhost:${PORT}/Fronted%20sistema/chatbot/chatbot.html`);
     console.log('   Aguardando WhatsApp conectar...\n');
+    notificacoes.iniciar(client, () => estado, salvarEntradaHistorico);
 });
 
 client.initialize();

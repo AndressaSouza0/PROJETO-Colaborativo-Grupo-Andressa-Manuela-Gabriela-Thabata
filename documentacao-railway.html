@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deploy no Railway — Servidor WhatsApp</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&family=Raleway:wght@400;700;800;900&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --railway: #7c3aed;
+            --railway-light: #ede9fe;
+            --railway-dark: #5b21b6;
+            --green: #059669;
+            --green-light: #d1fae5;
+            --orange: #d97706;
+            --orange-light: #fef3c7;
+            --red: #dc2626;
+            --red-light: #fee2e2;
+            --blue: #1d4ed8;
+            --blue-light: #dbeafe;
+            --text: #1f2937;
+            --text-muted: #6b7280;
+            --border: #e5e7eb;
+            --bg: #f9fafb;
+            --white: #ffffff;
+            --code-bg: #1e1e2e;
+            --code-text: #cdd6f4;
+        }
+
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: "Open Sans", Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+
+        /* ── HEADER ── */
+        header {
+            background: linear-gradient(135deg, #0f0527 0%, #3b0764 50%, #1e1b4b 100%);
+            color: white;
+            padding: 60px 24px 48px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        header::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse 60% 80% at 50% 0%, rgba(124,58,237,.4) 0%, transparent 70%);
+        }
+        .header-inner { position: relative; z-index: 1; max-width: 800px; margin: 0 auto; }
+        .header-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(124,58,237,.35);
+            border: 1px solid rgba(167,139,250,.4);
+            border-radius: 100px;
+            padding: 6px 18px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: #c4b5fd;
+            margin-bottom: 24px;
+        }
+        .header-badge svg { width: 16px; height: 16px; fill: currentColor; }
+        header h1 {
+            font-family: "Raleway", sans-serif;
+            font-size: clamp(1.8rem, 5vw, 3rem);
+            font-weight: 900;
+            margin-bottom: 14px;
+            line-height: 1.15;
+        }
+        header h1 span { color: #a78bfa; }
+        header p {
+            font-size: 1rem;
+            color: #c4b5fd;
+            max-width: 560px;
+            margin: 0 auto;
+        }
+
+        /* ── LAYOUT ── */
+        .container { max-width: 900px; margin: 0 auto; padding: 0 24px; }
+
+        /* ── SUMÁRIO ── */
+        .sumario {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 32px 36px;
+            margin: 40px auto;
+            max-width: 900px;
+        }
+        .sumario h2 {
+            font-family: "Raleway", sans-serif;
+            font-size: 1rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+        .sumario ol {
+            list-style: none;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 10px;
+        }
+        .sumario li a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: var(--text);
+            font-size: 0.9rem;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: background .18s;
+        }
+        .sumario li a:hover { background: var(--railway-light); color: var(--railway-dark); }
+        .sumario li a .num {
+            min-width: 24px; height: 24px;
+            background: var(--railway-light);
+            color: var(--railway);
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        /* ── SEÇÕES ── */
+        .secao {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 36px 40px;
+            margin-bottom: 28px;
+        }
+        .secao-titulo {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 28px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--border);
+        }
+        .secao-num {
+            min-width: 44px; height: 44px;
+            background: linear-gradient(135deg, var(--railway), var(--railway-dark));
+            color: white;
+            border-radius: 12px;
+            font-family: "Raleway", sans-serif;
+            font-size: 1.1rem;
+            font-weight: 900;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .secao-titulo h2 {
+            font-family: "Raleway", sans-serif;
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: var(--text);
+            line-height: 1.25;
+        }
+        .secao-titulo p {
+            font-size: 0.86rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* ── ALERTAS / CALLOUTS ── */
+        .callout {
+            display: flex;
+            gap: 14px;
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin: 20px 0;
+            font-size: 0.88rem;
+            line-height: 1.6;
+        }
+        .callout-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: 2px; }
+        .callout.info    { background: var(--blue-light);   border-left: 4px solid var(--blue); }
+        .callout.aviso   { background: var(--orange-light); border-left: 4px solid var(--orange); }
+        .callout.sucesso { background: var(--green-light);  border-left: 4px solid var(--green); }
+        .callout.erro    { background: var(--red-light);    border-left: 4px solid var(--red); }
+        .callout.railway { background: var(--railway-light); border-left: 4px solid var(--railway); }
+        .callout strong { display: block; margin-bottom: 4px; font-weight: 700; }
+
+        /* ── PASSOS NUMERADOS ── */
+        .passos { list-style: none; margin: 16px 0; }
+        .passos li {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        .passo-num {
+            min-width: 32px; height: 32px;
+            background: var(--railway);
+            color: white;
+            border-radius: 50%;
+            font-size: 0.82rem;
+            font-weight: 800;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+            margin-top: 3px;
+        }
+        .passo-corpo { flex: 1; }
+        .passo-corpo strong { display: block; font-weight: 700; margin-bottom: 4px; font-size: 0.95rem; }
+        .passo-corpo p { font-size: 0.88rem; color: var(--text-muted); }
+
+        /* ── CÓDIGO ── */
+        .bloco-codigo {
+            background: var(--code-bg);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 16px 0;
+            font-family: "Fira Code", "Consolas", monospace;
+        }
+        .codigo-header {
+            background: rgba(255,255,255,.06);
+            padding: 8px 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.72rem;
+            color: #7f849c;
+            font-family: "Open Sans", sans-serif;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .6px;
+        }
+        .codigo-header .dot { width: 10px; height: 10px; border-radius: 50%; }
+        .codigo-header .dot.r { background: #f38ba8; }
+        .codigo-header .dot.y { background: #f9e2af; }
+        .codigo-header .dot.g { background: #a6e3a1; }
+        .bloco-codigo pre {
+            padding: 18px 20px;
+            font-size: 0.84rem;
+            color: var(--code-text);
+            line-height: 1.7;
+            overflow-x: auto;
+        }
+        .bloco-codigo pre .comentario { color: #585b70; }
+        .bloco-codigo pre .destaque   { color: #a6e3a1; }
+        .bloco-codigo pre .url        { color: #89dceb; }
+        .bloco-codigo pre .caminho    { color: #fab387; }
+
+        /* ── INLINE CODE ── */
+        code {
+            font-family: "Fira Code", "Consolas", monospace;
+            background: #f3f4f6;
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            padding: 1px 6px;
+            font-size: 0.85em;
+            color: var(--railway-dark);
+        }
+
+        /* ── CARDS DE PRÉ-REQUISITO ── */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 16px;
+            margin: 20px 0;
+        }
+        .card-req {
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .card-req-icone {
+            width: 42px; height: 42px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem;
+        }
+        .card-req-icone.roxo  { background: var(--railway-light); }
+        .card-req-icone.verde { background: var(--green-light); }
+        .card-req-icone.azul  { background: var(--blue-light); }
+        .card-req strong { font-size: 0.9rem; }
+        .card-req p { font-size: 0.8rem; color: var(--text-muted); }
+
+        /* ── TABELA ── */
+        .tabela-wrap { overflow-x: auto; margin: 20px 0; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
+        th {
+            background: var(--railway-light);
+            color: var(--railway-dark);
+            font-weight: 700;
+            padding: 10px 16px;
+            text-align: left;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+        }
+        td {
+            padding: 10px 16px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
+        }
+        tr:last-child td { border-bottom: none; }
+        .badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 100px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+        .badge.verde  { background: var(--green-light);   color: #065f46; }
+        .badge.amarelo { background: var(--orange-light); color: #78350f; }
+        .badge.roxo   { background: var(--railway-light); color: var(--railway-dark); }
+
+        /* ── TIMELINE DA URL ── */
+        .url-demo {
+            background: #f3f4f6;
+            border-radius: 10px;
+            padding: 16px 20px;
+            font-family: "Fira Code", monospace;
+            font-size: 0.88rem;
+            color: #374151;
+            margin: 16px 0;
+            word-break: break-all;
+        }
+        .url-demo .parte { color: var(--railway-dark); font-weight: 700; }
+
+        /* ── FOOTER ── */
+        footer {
+            text-align: center;
+            padding: 40px 24px;
+            color: var(--text-muted);
+            font-size: 0.82rem;
+            border-top: 1px solid var(--border);
+            margin-top: 20px;
+        }
+
+        /* ── SEPARADOR ── */
+        .sep { height: 1px; background: var(--border); margin: 28px 0; }
+
+        @media (max-width: 640px) {
+            .secao { padding: 24px 20px; }
+            .sumario { padding: 24px 20px; }
+            .cards-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="header-inner">
+        <div class="header-badge">
+            <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            Guia de Deploy
+        </div>
+        <h1>Subindo o Servidor <span>WhatsApp</span><br>no Railway</h1>
+        <p>Guia completo para colocar o servidor Node.js em produção na nuvem, rodando 24 horas por dia.</p>
+    </div>
+</header>
+
+<div class="container">
+
+    <!-- ── SUMÁRIO ── -->
+    <div class="sumario">
+        <h2>Índice</h2>
+        <ol>
+            <li><a href="#s1"><span class="num">1</span> O que é o Railway</a></li>
+            <li><a href="#s2"><span class="num">2</span> Pré-requisitos</a></li>
+            <li><a href="#s3"><span class="num">3</span> Subir código para o GitHub</a></li>
+            <li><a href="#s4"><span class="num">4</span> Criar projeto no Railway</a></li>
+            <li><a href="#s5"><span class="num">5</span> Volume para sessão do WhatsApp</a></li>
+            <li><a href="#s6"><span class="num">6</span> Primeiro acesso — QR Code</a></li>
+            <li><a href="#s7"><span class="num">7</span> Acessar o sistema online</a></li>
+            <li><a href="#s8"><span class="num">8</span> Como atualizar o servidor</a></li>
+            <li><a href="#s9"><span class="num">9</span> Monitorar e ver logs</a></li>
+            <li><a href="#s10"><span class="num">10</span> Problemas comuns</a></li>
+        </ol>
+    </div>
+
+    <!-- ── 1 ── -->
+    <section class="secao" id="s1">
+        <div class="secao-titulo">
+            <div class="secao-num">1</div>
+            <div>
+                <h2>O que é o Railway</h2>
+                <p>Entenda por que usamos essa plataforma</p>
+            </div>
+        </div>
+
+        <p>O <strong>Railway</strong> é uma plataforma de hospedagem em nuvem que mantém servidores Node.js rodando 24 horas por dia, 7 dias por semana — mesmo com seu computador desligado.</p>
+
+        <div class="callout sucesso" style="margin-top:20px;">
+            <span class="callout-icon">✅</span>
+            <div><strong>Por que Railway para este projeto?</strong>
+            O servidor WhatsApp precisa ficar ativo o tempo todo para que os crons automáticos de notificação (8h e 14h) funcionem. No Railway, isso acontece na nuvem, sem depender do seu PC.</div>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="tabela-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Situação</th>
+                        <th>Servidor local (seu PC)</th>
+                        <th>Railway (nuvem)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>PC desligado</td>
+                        <td>❌ Servidor para</td>
+                        <td>✅ Continua rodando</td>
+                    </tr>
+                    <tr>
+                        <td>Crons de 8h e 14h</td>
+                        <td>Só se o PC estiver ligado</td>
+                        <td>✅ Sempre executam</td>
+                    </tr>
+                    <tr>
+                        <td>Acesso ao sistema</td>
+                        <td>Só na rede local</td>
+                        <td>✅ URL pública, de qualquer lugar</td>
+                    </tr>
+                    <tr>
+                        <td>Custo</td>
+                        <td>Grátis</td>
+                        <td>~US$ 5/mês (Hobby Plan)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- ── 2 ── -->
+    <section class="secao" id="s2">
+        <div class="secao-titulo">
+            <div class="secao-num">2</div>
+            <div>
+                <h2>Pré-requisitos</h2>
+                <p>O que você precisa ter antes de começar</p>
+            </div>
+        </div>
+
+        <div class="cards-grid">
+            <div class="card-req">
+                <div class="card-req-icone roxo">🐙</div>
+                <strong>Conta no GitHub</strong>
+                <p>Gratuita. O Railway puxa o código diretamente do repositório GitHub.</p>
+            </div>
+            <div class="card-req">
+                <div class="card-req-icone verde">🚂</div>
+                <strong>Conta no Railway</strong>
+                <p>Crie em <strong>railway.app</strong>. Use sua conta do GitHub para entrar.</p>
+            </div>
+            <div class="card-req">
+                <div class="card-req-icone azul">💳</div>
+                <strong>Cartão de crédito</strong>
+                <p>Necessário para o Hobby Plan (~US$ 5/mês). Sem ele, o serviço pode pausar.</p>
+            </div>
+        </div>
+
+        <div class="callout aviso">
+            <span class="callout-icon">⚠️</span>
+            <div><strong>Sobre o plano gratuito</strong>
+            O Railway tem um plano gratuito com 500 horas/mês, mas servidores que ficam rodando o tempo todo precisam do Hobby Plan (US$ 5/mês). Sem esse plano, o servidor será suspenso após usar as horas gratuitas.</div>
+        </div>
+
+        <div class="callout sucesso">
+            <span class="callout-icon">✅</span>
+            <div><strong>Código já preparado</strong>
+            O <code>bot.js</code>, o <code>Dockerfile</code> e o <code>.dockerignore</code> já foram ajustados para o Railway. Você não precisa mexer em mais nenhum arquivo de código.</div>
+        </div>
+    </section>
+
+    <!-- ── 3 ── -->
+    <section class="secao" id="s3">
+        <div class="secao-titulo">
+            <div class="secao-num">3</div>
+            <div>
+                <h2>Subir o código para o GitHub</h2>
+                <p>O Railway busca o código diretamente do seu repositório</p>
+            </div>
+        </div>
+
+        <p>Se o repositório já existe no GitHub, basta enviar as mudanças recentes. Se ainda não existe, crie um novo.</p>
+
+        <div class="sep"></div>
+        <strong style="font-size:.9rem;">Se o repositório já existe no GitHub:</strong>
+
+        <div class="bloco-codigo" style="margin-top:12px;">
+            <div class="codigo-header">
+                <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+                Terminal (Git Bash / PowerShell)
+            </div>
+            <pre><span class="comentario"># Adiciona todos os arquivos modificados</span>
+git add .
+
+<span class="comentario"># Cria um commit com as mudanças</span>
+git commit -m "feat: configuração para deploy no Railway"
+
+<span class="comentario"># Envia para o GitHub</span>
+git push origin main</pre>
+        </div>
+
+        <div class="sep"></div>
+        <strong style="font-size:.9rem;">Se ainda não tem repositório no GitHub:</strong>
+
+        <ul class="passos" style="margin-top:16px;">
+            <li>
+                <div class="passo-num">1</div>
+                <div class="passo-corpo">
+                    <strong>Acesse github.com e clique em "New repository"</strong>
+                    <p>Dê um nome ao repositório (ex: <code>sistema-biblioteca</code>) e deixe como Privado.</p>
+                </div>
+            </li>
+            <li>
+                <div class="passo-num">2</div>
+                <div class="passo-corpo">
+                    <strong>Copie o link HTTPS do repositório criado</strong>
+                    <p>Ficará no formato: <code>https://github.com/seu-usuario/sistema-biblioteca.git</code></p>
+                </div>
+            </li>
+            <li>
+                <div class="passo-num">3</div>
+                <div class="passo-corpo">
+                    <strong>Conecte e envie o código pelo terminal</strong>
+                    <div class="bloco-codigo" style="margin-top:10px;">
+                        <div class="codigo-header">
+                            <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+                            Terminal
+                        </div>
+                        <pre>git remote add origin <span class="url">https://github.com/seu-usuario/sistema-biblioteca.git</span>
+git branch -M main
+git add .
+git commit -m "versão inicial"
+git push -u origin main</pre>
+                    </div>
+                </div>
+            </li>
+        </ul>
+
+        <div class="callout aviso">
+            <span class="callout-icon">⚠️</span>
+            <div><strong>Arquivos sensíveis</strong>
+            O <code>.gitignore</code> já está configurado para excluir a sessão do WhatsApp (<code>.wwebjs_auth/</code>) e o histórico de mensagens. Esses arquivos <strong>não devem</strong> ir para o GitHub.</div>
+        </div>
+    </section>
+
+    <!-- ── 4 ── -->
+    <section class="secao" id="s4">
+        <div class="secao-titulo">
+            <div class="secao-num">4</div>
+            <div>
+                <h2>Criar o projeto no Railway</h2>
+                <p>Conectar o repositório e fazer o primeiro deploy</p>
+            </div>
+        </div>
+
+        <ul class="passos">
+            <li>
+                <div class="passo-num">1</div>
+                <div class="passo-corpo">
+                    <strong>Acesse railway.app e faça login com sua conta GitHub</strong>
+                    <p>Na tela inicial, clique em <strong>"New Project"</strong>.</p>
+                </div>
+            </li>
+            <li>
+                <div class="passo-num">2</div>
+                <div class="passo-corpo">
+                    <strong>Escolha "Deploy from GitHub repo"</strong>
+                    <p>Autorize o Railway a acessar seus repositórios, se solicitado.</p>
+                </div>
+            </li>
+            <li>
+                <div class="passo-num">3</div>
+                <div class="passo-corpo">
+                    <strong>Selecione o repositório do sistema de biblioteca</strong>
+                    <p>Clique no repositório que contém o projeto e clique em <strong>"Deploy Now"</strong>.</p>
+                </div>
+            </li>
+            <li>
+                <div class="passo-num">4</div>
+                <div class="passo-corpo">
+                    <strong>Aguarde o build — Railway detecta o Dockerfile automaticamente</strong>
+                    <p>O Railway vê o arquivo <code>Dockerfile</code> na raiz do projeto e o usa para construir a imagem. O processo leva entre 3 e 8 minutos na primeira vez (instala o Chromium).</p>
+                </div>
+            </li>
+            <li>
+                <div class="passo-num">5</div>
+                <div class="passo-corpo">
+                    <strong>Verifique os logs de build em tempo real</strong>
+                    <p>Clique no serviço criado → aba <strong>"Build Logs"</strong>. Deve terminar com:</p>
+                    <div class="bloco-codigo" style="margin-top:10px;">
+                        <div class="codigo-header">
+                            <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+                            Railway Build Logs
+                        </div>
+                        <pre><span class="destaque">🚀 Servidor rodando em http://localhost:PORT</span>
+<span class="comentario">📱 QR Code gerado — escaneie pelo WhatsApp.</span></pre>
+                    </div>
+                </div>
+            </li>
+            <li>
+                <div class="passo-num">6</div>
+                <div class="passo-corpo">
+                    <strong>Gere uma URL pública para o serviço</strong>
+                    <p>No painel do serviço → <strong>"Settings"</strong> → seção <strong>"Networking"</strong> → clique em <strong>"Generate Domain"</strong>. O Railway criará uma URL como:</p>
+                    <div class="url-demo">
+                        https://<span class="parte">sistema-biblioteca-producao</span>.railway.app
+                    </div>
+                </div>
+            </li>
+        </ul>
+
+        <div class="callout railway">
+            <span class="callout-icon">🚂</span>
+            <div><strong>Deploy automático a cada push</strong>
+            A partir de agora, toda vez que você fizer <code>git push</code> para o GitHub, o Railway vai detectar e fazer o deploy automaticamente em poucos minutos.</div>
+        </div>
+    </section>
+
+    <!-- ── 5 ── -->
+    <section class="secao" id="s5">
+        <div class="secao-titulo">
+            <div class="secao-num">5</div>
+            <div>
+                <h2>Volume para persistência da sessão WhatsApp</h2>
+                <p>Passo crítico — sem isso, você precisará escanear o QR a cada reinício</p>
+            </div>
+        </div>
+
+        <div class="callout erro">
+            <span class="callout-icon">🔴</span>
+            <div><strong>Por que isso é importante?</strong>
+            O Railway usa containers efêmeros: quando o serviço reinicia (deploy, falha, etc.), o sistema de arquivos é resetado. Sem um volume persistente, a sessão do WhatsApp some e você precisa escanear o QR Code de novo.</div>
+        </div>
+
+        <ul class="passos" style="margin-top:20px;">
+            <li>
+                <div class="passo-num">1</div>
+                <div class="passo-corpo">
+                    <strong>No painel do seu serviço, acesse a aba "Volumes"</strong>
+                    <p>Está no menu superior da tela do serviço.</p>
+                </div>
+            </li>
+            <li>
+                <div class="passo-num">2</div>
+                <div class="passo-corpo">
+                    <strong>Clique em "Create Volume"</strong>
+                    <p>O Railway vai criar um disco virtual persistente.</p>
+                </div>
+            </li>
+            <li>
+                <div class="passo-num">3</div>
+                <div class="passo-corpo">
+                    <strong>Configure o ponto de montagem do volume</strong>
+                    <p>No campo <strong>"Mount Path"</strong>, coloque exatamente:</p>
+                    <div class="bloco-codigo" style="margin-top:10px;">
+                        <div class="codigo-header">
+                            <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+                            Mount Path
+                        </div>
+                        <pre><span class="caminho">/app/servidor-whatsapp/.wwebjs_auth</span></pre>
+                    </div>
+                    <p style="margin-top:8px;">Esse é o caminho onde o <code>whatsapp-web.js</code> salva a sessão dentro do container.</p>
+                </div>
+            </li>
+            <li>
+                <div class="passo-num">4</div>
+                <div class="passo-corpo">
+                    <strong>Clique em "Add Volume" para salvar</strong>
+                    <p>O serviço vai reiniciar automaticamente. Aguarde o redeploy terminar.</p>
+                </div>
+            </li>
+        </ul>
+
+        <div class="callout sucesso">
+            <span class="callout-icon">✅</span>
+            <div>Após configurar o volume, você escaneará o QR Code <strong>apenas uma vez</strong>. A sessão ficará salva no volume mesmo se o serviço reiniciar.</div>
+        </div>
+    </section>
+
+    <!-- ── 6 ── -->
+    <section class="secao" id="s6">
+        <div class="secao-titulo">
+            <div class="secao-num">6</div>
+            <div>
+                <h2>Primeiro acesso — Escanear o QR Code</h2>
+                <p>Conectar o WhatsApp ao servidor em nuvem</p>
+            </div>
+        </div>
+
+        <p>Com o servidor rodando no Railway, você precisa escanear o QR Code pelo WhatsApp uma única vez para conectar a conta.</p>
+
+        <ul class="passos" style="margin-top:20px;">
+            <li>
+                <div class="passo-num">1</div>
+                <div class="passo-corpo">
+                    <strong>Acesse a URL pública do seu projeto Railway</strong>
+                    <p>Use a URL gerada no Passo 4.6. Exemplo:</p>
+                    <div class="url-demo">
+                        https://<span class="parte">seu-projeto</span>.railway.app<span class="parte">/Fronted%20sistema/chatbot/chatbot.html</span>
+                    </div>
+                </div>
+            </li>
+            <li>
+                <div class="passo-num">2</div>
+                <div class="passo-corpo">
+                    <strong>Na tela do chatbot, o QR Code aparecerá automaticamente</strong>
+                    <p>O sistema detecta que o WhatsApp não está conectado e exibe o QR. Se demorar, aguarde alguns segundos e recarregue a página.</p>
+                </div>
+            </li>
+            <li>
+                <div class="passo-num">3</div>
+                <div class="passo-corpo">
+                    <strong>Abra o WhatsApp no celular → Menu → "Dispositivos conectados"</strong>
+                    <p>No iPhone: Configurações → "Dispositivos vinculados". Toque em <strong>"Conectar um dispositivo"</strong> e escaneie o QR.</p>
+                </div>
+            </li>
+            <li>
+                <div class="passo-num">4</div>
+                <div class="passo-corpo">
+                    <strong>Aguarde a confirmação</strong>
+                    <p>Após escanear, a página atualiza automaticamente e exibe <strong>"● WhatsApp Conectado"</strong> em verde. O servidor está pronto.</p>
+                </div>
+            </li>
+        </ul>
+
+        <div class="callout aviso">
+            <span class="callout-icon">⏱️</span>
+            <div><strong>O QR Code expira em 60 segundos</strong>
+            Se expirar antes de você escanear, aguarde — a página gera um novo automaticamente a cada 45 segundos.</div>
+        </div>
+
+        <div class="callout info">
+            <span class="callout-icon">💡</span>
+            <div><strong>Alternativa: endpoint direto do QR Code</strong>
+            Você também pode acessar o QR Code diretamente pela API em:<br>
+            <code>https://seu-projeto.railway.app/api/qrcode</code><br>
+            O retorno é um JSON com o QR em base64.</div>
+        </div>
+    </section>
+
+    <!-- ── 7 ── -->
+    <section class="secao" id="s7">
+        <div class="secao-titulo">
+            <div class="secao-num">7</div>
+            <div>
+                <h2>Acessar o sistema online</h2>
+                <p>URLs que ficam disponíveis na nuvem</p>
+            </div>
+        </div>
+
+        <p>Com o servidor no Railway, o sistema inteiro é acessível de qualquer dispositivo com internet, usando a URL pública gerada:</p>
+
+        <div class="tabela-wrap" style="margin-top:20px;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tela</th>
+                        <th>Caminho</th>
+                        <th>Função</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="badge verde">Login</span></td>
+                        <td><code>/Fronted%20sistema/login/login.html</code></td>
+                        <td>Acesso de administrador</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge verde">Chatbot</span></td>
+                        <td><code>/Fronted%20sistema/chatbot/chatbot.html</code></td>
+                        <td>WhatsApp + QR Code</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge roxo">Status API</span></td>
+                        <td><code>/api/status</code></td>
+                        <td>JSON com estado da conexão</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge roxo">QR Code API</span></td>
+                        <td><code>/api/qrcode</code></td>
+                        <td>QR Code em base64</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge roxo">Histórico API</span></td>
+                        <td><code>/api/historico</code></td>
+                        <td>JSON com envios recentes</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge amarelo">Teste manual</span></td>
+                        <td><code>/api/notificacoes/executar</code> (POST)</td>
+                        <td>Dispara os crons manualmente</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="callout info">
+            <span class="callout-icon">🔒</span>
+            <div><strong>Segurança</strong>
+            O sistema usa login com bcrypt e sessionStorage para proteger as telas. No entanto, os endpoints de API não têm autenticação — considere não divulgar a URL pública do Railway para pessoas externas.</div>
+        </div>
+    </section>
+
+    <!-- ── 8 ── -->
+    <section class="secao" id="s8">
+        <div class="secao-titulo">
+            <div class="secao-num">8</div>
+            <div>
+                <h2>Como atualizar o servidor</h2>
+                <p>A cada mudança no código, o Railway faz o deploy automaticamente</p>
+            </div>
+        </div>
+
+        <p>O Railway monitora o repositório GitHub. A cada <code>git push</code>, ele refaz o build e atualiza o servidor automaticamente — sem precisar acessar o painel do Railway.</p>
+
+        <div class="bloco-codigo" style="margin-top:20px;">
+            <div class="codigo-header">
+                <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+                Fluxo de atualização
+            </div>
+            <pre><span class="comentario"># 1. Faça as mudanças no código localmente</span>
+
+<span class="comentario"># 2. Adicione e commit as mudanças</span>
+git add .
+git commit -m "fix: descrição da mudança"
+
+<span class="comentario"># 3. Envie para o GitHub</span>
+git push origin main
+
+<span class="comentario"># Railway detecta o push automaticamente e inicia o deploy (2-5 min)</span></pre>
+        </div>
+
+        <div class="callout aviso">
+            <span class="callout-icon">⚠️</span>
+            <div><strong>Durante o deploy, o servidor fica offline por ~1 minuto</strong>
+            O Railway derruba o container antigo e sobe o novo. As notificações automáticas e o WhatsApp ficam indisponíveis nesse intervalo. O volume garante que a sessão seja mantida após o reinício.</div>
+        </div>
+    </section>
+
+    <!-- ── 9 ── -->
+    <section class="secao" id="s9">
+        <div class="secao-titulo">
+            <div class="secao-num">9</div>
+            <div>
+                <h2>Monitorar e ver logs</h2>
+                <p>Como acompanhar o que está acontecendo no servidor</p>
+            </div>
+        </div>
+
+        <ul class="passos">
+            <li>
+                <div class="passo-num">1</div>
+                <div class="passo-corpo">
+                    <strong>Acesse railway.app → seu projeto → seu serviço</strong>
+                    <p>Você vê o painel principal com o status atual (ativo ou com falha).</p>
+                </div>
+            </li>
+            <li>
+                <div class="passo-num">2</div>
+                <div class="passo-corpo">
+                    <strong>Aba "Logs" — logs em tempo real do servidor</strong>
+                    <p>É aqui que aparecem as mensagens do <code>console.log</code> do <code>bot.js</code>, incluindo confirmações de envio de WhatsApp e erros do cron.</p>
+                    <div class="bloco-codigo" style="margin-top:10px;">
+                        <div class="codigo-header">
+                            <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+                            Exemplo de logs saudáveis
+                        </div>
+                        <pre><span class="destaque">✅ WhatsApp conectado!</span>
+<span class="comentario">📅 Cron de notificações automáticas ativado (8h e 14h).</span>
+<span class="comentario">⏰ [28/06/2026 08:00:00] Cron de notificações disparado.</span>
+<span class="destaque">  ✅ lembrete_3d → Maria Silva (5511999999999)</span>
+<span class="comentario">📊 1 notificação(ões) enviada(s).</span></pre>
+                    </div>
+                </div>
+            </li>
+            <li>
+                <div class="passo-num">3</div>
+                <div class="passo-corpo">
+                    <strong>Aba "Metrics" — uso de CPU e memória</strong>
+                    <p>O servidor com Chromium usa em torno de 200–400 MB de RAM. Se o Railway mostrar uso muito alto e reinícios frequentes, considere fazer upgrade do plano.</p>
+                </div>
+            </li>
+        </ul>
+
+        <div class="callout info">
+            <span class="callout-icon">📊</span>
+            <div><strong>Histórico de mensagens enviadas</strong>
+            Acesse <code>https://seu-projeto.railway.app/api/historico</code> para ver um JSON com todos os envios recentes. Essa informação também fica visível na aba "Histórico" do chatbot.</div>
+        </div>
+    </section>
+
+    <!-- ── 10 ── -->
+    <section class="secao" id="s10">
+        <div class="secao-titulo">
+            <div class="secao-num">10</div>
+            <div>
+                <h2>Problemas comuns</h2>
+                <p>Soluções para as situações mais frequentes</p>
+            </div>
+        </div>
+
+        <div class="callout erro" style="margin-bottom:20px;">
+            <span class="callout-icon">🔴</span>
+            <div>
+                <strong>Build falhou — "chromium: not found" ou erro do Puppeteer</strong>
+                Verifique se o <code>Dockerfile</code> está na raiz do repositório (não dentro de <code>servidor-whatsapp/</code>). O Railway deve usar esse arquivo automaticamente.
+            </div>
+        </div>
+
+        <div class="callout erro" style="margin-bottom:20px;">
+            <span class="callout-icon">🔴</span>
+            <div>
+                <strong>QR Code some e precisa ser escaneado toda vez que o servidor reinicia</strong>
+                O volume persistente não foi configurado (Passo 5). Configure o volume apontando para <code>/app/servidor-whatsapp/.wwebjs_auth</code>.
+            </div>
+        </div>
+
+        <div class="callout aviso" style="margin-bottom:20px;">
+            <span class="callout-icon">🟡</span>
+            <div>
+                <strong>Status exibe "Servidor offline" no chatbot</strong>
+                O Railway pode estar reiniciando o container. Aguarde 1–2 minutos e recarregue a página. Se continuar, verifique os logs em busca de erros.
+            </div>
+        </div>
+
+        <div class="callout aviso" style="margin-bottom:20px;">
+            <span class="callout-icon">🟡</span>
+            <div>
+                <strong>Serviço "sleeping" — Railway pausando o servidor</strong>
+                Isso acontece no plano gratuito quando não há requisições por um tempo. Atualize para o Hobby Plan (US$ 5/mês) para manter o servidor sempre ativo.
+            </div>
+        </div>
+
+        <div class="callout info">
+            <span class="callout-icon">💡</span>
+            <div>
+                <strong>Erro "WhatsApp não está conectado" ao tentar enviar mensagem</strong>
+                A sessão foi perdida. Acesse a tela do chatbot pela URL do Railway e escaneie o QR Code novamente. Com o volume configurado, isso não deve se repetir.
+            </div>
+        </div>
+    </section>
+
+</div>
+
+<footer>
+    Biblioteca Jorge Amado — Documentação de Deploy · Railway · Gerado em junho de 2026
+</footer>
+
+</body>
+</html>

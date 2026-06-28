@@ -137,3 +137,8 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# WhatsApp server — sessão local e cache (não devem ir para o repositório)
+servidor-whatsapp/.wwebjs_auth/
+servidor-whatsapp/.wwebjs_cache/
+servidor-whatsapp/historico.json
