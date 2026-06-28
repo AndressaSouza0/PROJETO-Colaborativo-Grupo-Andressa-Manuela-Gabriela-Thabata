@@ -1,0 +1,7 @@
+[build]
+  builder = "nixpacks"
+  buildCommand = "cd servidor-whatsapp && npm install"
+
+[deploy]
+  startCommand = "node servidor-whatsapp/bot.js"
+  restartPolicyType = "on_failure"
