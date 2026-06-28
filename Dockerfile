@@ -11,6 +11,7 @@ RUN apt-get update && apt-get install -y \
 # Informa ao Puppeteer onde encontrar o Chromium instalado
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PORT=3000
 
 WORKDIR /app
 
